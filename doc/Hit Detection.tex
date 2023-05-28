@@ -1,0 +1,64 @@
+\documentclass{article}
+\begin{document}
+\title{Hit Detection}
+\author{31core}
+\maketitle
+\newpage
+%----- Catalog -----
+\tableofcontents
+\newpage
+\setlength{\parindent}{0em}
+\section{Vector expression of Ray}
+Any ray can be expressed using a point and a unit vector like this:
+\begin{equation}
+R = A + t\vec{B}
+\end{equation}
+
+\section{Hit detection of Sphere}
+\subsection{Mathematical proof}
+Because $\vec{CA}$ is perpendicular to $\vec{B}$, so we can get this equation.
+
+$(\vec{CA} + t_d\vec{B})\vec{B} = 0$
+
+We can get $t_d$ like this:
+
+$t_d = \frac{ - \vec{CA} \cdot \vec{B} }{ \vec{B}^2 } = -\vec{CA} \cdot  \vec{B}$
+
+Then calculate the distance from the center of the sphere to the ray:
+
+$d = |\vec{CA} + t_d\vec{B}|$
+
+If $d \le R$, the ray do hit the sphere.
+
+Finally, calculate the $t$.
+
+$t = \frac{|t_d\vec{B}| - \sqrt{R^2 - d^2}}{|\vec{B}|} = t_d - \sqrt{R^2 - d^2}$
+
+\subsection{Final formula}
+\begin{equation}
+t_d = -\vec{CA} \cdot  \vec{B}
+\end{equation}
+\begin{equation}
+d = |\vec{CA} + t_d\vec{B}|
+\end{equation}
+\begin{equation}
+t = t_d - \sqrt{R^2 - d^2}
+\end{equation}
+
+\section{Reflection of Ray}
+\subsection{Mathematical proof}
+$-\vec{A} + \vec{B} = t\vec{N}$
+
+$(\frac{t}{2}\vec{B} + \vec{A})\vec{N} = 0$
+
+$t = -\frac{2\vec{A}^2}{\vec{N} \cdot \vec{A}} = -\frac{2}{\vec{N} \cdot \vec{A}}$
+
+\subsection{Final formula}
+\begin{equation}
+t = -\frac{2}{\vec{N} \cdot \vec{A}}
+\end{equation}
+\begin{equation}
+\vec{B} = t\vec{N} + \vec{A}
+\end{equation}
+
+\end{document}

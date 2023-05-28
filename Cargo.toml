@@ -1,0 +1,11 @@
+[package]
+name = "render"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "31render"
+path = "src/main.rs"
+
+[dependencies]
+ppm = { path = "ppm" }
