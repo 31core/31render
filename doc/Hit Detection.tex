@@ -61,4 +61,42 @@ t = -\frac{2}{\vec{N} \cdot \vec{A}}
 \vec{B} = t\vec{N} + \vec{A}
 \end{equation}
 
+\section{Refraction of Ray}
+\subsection{Mathematical proof}
+$
+(\vec{A} + t\vec{N})\vec{N} = 0
+\rightarrow
+t = -\frac{\vec{A} \cdot \vec{N}}{\vec{N}^2}
+=
+-\vec{A} \cdot \vec{N}
+$
+
+Express $\vec{C}$ $\vec{D}$ that are perpendicular to $\vec{N}$:
+
+$\vec{C} = \vec{A} + t\vec{N}$
+
+$\vec{D} = \vec{B} + t\vec{N}$
+
+Then we express refraction rate(n) with $\vec{A}$, $\vec{B}$, $\vec{C}$ and $\vec{D}$:
+
+$
+\frac{\frac{|\vec{C}|}{|\vec{A}|}}{\frac{|\vec{D}|}{|\vec{B}|}} = n
+\rightarrow
+\vec{D} = \frac{|\vec{D}|}{|\vec{C}|} \cdot \vec{C}
+=
+\frac{\vec{C}}{n}
+$
+
+\subsection{Final formula}
+\begin{equation}
+t = -\vec{A} \cdot \vec{N}
+\end{equation}
+
+\begin{equation}
+\vec{C} = \vec{A} + t\vec{N}
+\end{equation}
+
+\begin{equation}
+\vec{B} = \frac{\vec{C}}{n} - t\vec{N}
+\end{equation}
 \end{document}

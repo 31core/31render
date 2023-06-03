@@ -1,9 +1,12 @@
+use super::material::*;
 use super::ray::Ray;
 use super::vector::Vector3D;
+use std::rc::Rc;
 
 pub trait Object {
     fn hit(&self, r: &Ray) -> Option<f64>;
     fn normal(&self, p: &Point) -> Vector3D;
+    fn material(&self) -> Rc<dyn Material>;
 }
 
 #[derive(Clone, Debug)]
@@ -28,11 +31,19 @@ impl Point {
 pub struct Sphere {
     center: Point,
     radius: f64,
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new<M>(center: Point, radius: f64, material: M) -> Self
+    where
+        M: Material + 'static,
+    {
+        Self {
+            center,
+            radius,
+            material: Rc::new(material),
+        }
     }
 }
 
@@ -44,13 +55,24 @@ impl Object for Sphere {
         let distance = (ca + t_d * ray.direction).module();
 
         if t_d > 0. && distance <= self.radius {
-            Some(t_d - (self.radius.powi(2) - distance.powi(2)).sqrt())
+            let t = t_d - (self.radius.powi(2) - distance.powi(2)).sqrt();
+            if t > 0. {
+                Some(t)
+            }
+            /* if the lighht source is on the sphere */
+            else {
+                let t = t_d + (self.radius.powi(2) - distance.powi(2)).sqrt();
+                Some(t)
+            }
         } else {
             None
         }
     }
     fn normal(&self, p: &Point) -> Vector3D {
         self.center.to_vec3d(p).unit()
+    }
+    fn material(&self) -> Rc<dyn Material> {
+        Rc::clone(&self.material)
     }
 }
 
