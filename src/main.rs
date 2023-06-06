@@ -2,29 +2,51 @@ mod color;
 mod cordinate;
 mod material;
 mod ray;
+mod render;
 mod vector;
 
 use cordinate::*;
-
+use std::rc::Rc;
 fn main() {
     const SIZE_X: usize = 1920;
     const SIZE_Y: usize = 1080;
-    let mut ppm = ppm::Image::new(SIZE_X, SIZE_Y);
 
-    let view = Viewport::new(4, 2, SIZE_X, SIZE_Y);
-    let mut objects: Vec<Box<dyn Object>> = Vec::new();
-    let m = material::Glass::default();
-    let s = Sphere::new(Point::new(0., 0., -1.), 0.5, m);
-    objects.push(Box::new(s));
-    let s = Sphere::new(Point::new(1.2, 0., -2.), 0.7, material::Metal::default());
-    objects.push(Box::new(s));
-    for y in 0..SIZE_Y {
-        for x in 0..SIZE_X {
-            let ray = view.get_ray(x, y);
-            let color = ray.trace(&objects, 5);
-            ppm.set_pixel(x, y, color.to_rgb());
-        }
-    }
+    let render = render::Render::new(4., 4. * 8. / 16., SIZE_X, SIZE_Y);
+    let mut objects: Vec<Rc<dyn Object>> = Vec::new();
 
-    ppm.save("out.ppm", ppm::PPMType::P3).unwrap();
+    /* left */
+    let m = material::Glass {
+        attenuation: (0.9, 0.9, 0.9),
+        ..Default::default()
+    };
+    let s = Sphere::new(Point::new(-1., 0., -2.), 0.5, m);
+    objects.push(Rc::new(s));
+
+    /* central */
+    let m = material::Metal {
+        attenuation: (0.8, 0.4, 0.8),
+        fuzz: 5.,
+    };
+    let s = Sphere::new(Point::new(0., 0., -2.), 0.5, m);
+    objects.push(Rc::new(s));
+
+    /* right */
+    let m = material::Metal {
+        attenuation: (0.8, 0.8, 0.8),
+        fuzz: 0.7,
+    };
+    let s = Sphere::new(Point::new(1., 0., -2.), 0.5, m);
+    objects.push(Rc::new(s));
+
+    let m = material::Metal {
+        attenuation: (0.8, 0.8, 0.8),
+        ..Default::default()
+    };
+    let s = Sphere::new(Point::new(1.2, -520., -50.), 500., m);
+    objects.push(Rc::new(s));
+
+    render
+        .rend(&objects)
+        .save("out.ppm", ppm::PPMType::P3)
+        .unwrap();
 }

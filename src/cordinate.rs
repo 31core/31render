@@ -1,6 +1,7 @@
 use super::material::*;
 use super::ray::Ray;
 use super::vector::Vector3D;
+use rand::Rng;
 use std::rc::Rc;
 
 pub trait Object {
@@ -77,15 +78,15 @@ impl Object for Sphere {
 }
 
 pub struct Viewport {
-    pub width: usize,
-    pub height: usize,
+    pub width: f64,
+    pub height: f64,
     pub pixel_x: usize,
     pub pixel_y: usize,
     pub focal: f64,
 }
 
 impl Viewport {
-    pub fn new(width: usize, height: usize, pixel_x: usize, pixel_y: usize) -> Self {
+    pub fn new(width: f64, height: f64, pixel_x: usize, pixel_y: usize) -> Self {
         Self {
             width,
             height,
@@ -94,14 +95,24 @@ impl Viewport {
             focal: -1.,
         }
     }
-    pub fn get_ray(&self, x: usize, y: usize) -> Ray {
-        let mut start = Vector3D::new(
-            -(self.width as f64) * 0.5,
-            self.height as f64 * 0.5,
-            self.focal,
-        );
-        start.x += self.width as f64 / self.pixel_x as f64 * x as f64;
-        start.y -= self.height as f64 / self.pixel_y as f64 * y as f64;
+    pub fn get_ray_central(&self, x: usize, y: usize) -> Ray {
+        let mut start = Vector3D::new(-self.width * 0.5, self.height * 0.5, self.focal);
+
+        let x_unit = self.width / self.pixel_x as f64;
+        let y_unit = self.height / self.pixel_y as f64;
+        start.x += x_unit * x as f64 + 0.5 * x_unit;
+        start.y -= y_unit * y as f64 + 0.5 * y_unit;
+        let direction = start - Vector3D::new(0., 0., 0.);
+        Ray::new(Point::new(0., 0., 0.), direction)
+    }
+    pub fn get_ray_random(&self, x: usize, y: usize) -> Ray {
+        let mut start = Vector3D::new(-self.width * 0.5, self.height * 0.5, self.focal);
+        let x_unit = self.width / self.pixel_x as f64;
+        let y_unit = self.height / self.pixel_y as f64;
+
+        let mut rng = rand::thread_rng();
+        start.x += x_unit * x as f64 + rng.gen_range(0.0..x_unit);
+        start.y -= y_unit * y as f64 + rng.gen_range(0.0..y_unit);
         let direction = start - Vector3D::new(0., 0., 0.);
         Ray::new(Point::new(0., 0., 0.), direction)
     }

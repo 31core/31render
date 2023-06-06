@@ -12,6 +12,17 @@ impl Vector3D {
         Self { x, y, z }
     }
     /**
+     * Generate a random unit vector
+     */
+    pub fn new_random_unit() -> Self {
+        let rand_vec = Vector3D {
+            x: rand::random(),
+            y: rand::random(),
+            z: rand::random(),
+        };
+        rand_vec.unit()
+    }
+    /**
      * Dot product
      */
     pub fn cdot(&self, rhs: &Self) -> f64 {
@@ -90,16 +101,6 @@ impl Mul for Vector3D {
     }
 }
 
-impl Mul<f64> for Vector3D {
-    type Output = Self;
-    fn mul(mut self, rhs: f64) -> Self {
-        self.x *= rhs;
-        self.y *= rhs;
-        self.z *= rhs;
-        self
-    }
-}
-
 impl Mul<Vector3D> for f64 {
     type Output = Vector3D;
     fn mul(self, mut rhs: Vector3D) -> Self::Output {
@@ -123,6 +124,6 @@ impl Div<f64> for Vector3D {
 impl Neg for Vector3D {
     type Output = Self;
     fn neg(self) -> Self {
-        self * -1.
+        -1. * self
     }
 }
