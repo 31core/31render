@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::ops::*;
 
 #[derive(Debug, Clone, Copy)]
@@ -11,14 +12,22 @@ impl Vector3D {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
+    pub fn from(vec: (f64, f64, f64)) -> Self {
+        Self {
+            x: vec.0,
+            y: vec.1,
+            z: vec.2,
+        }
+    }
     /**
      * Generate a random unit vector
      */
     pub fn new_random_unit() -> Self {
+        let mut rng = rand::thread_rng();
         let rand_vec = Vector3D {
-            x: rand::random(),
-            y: rand::random(),
-            z: rand::random(),
+            x: rng.gen_range(-1.0..1.),
+            y: rng.gen_range(-1.0..1.),
+            z: rng.gen_range(-1.0..1.),
         };
         rand_vec.unit()
     }

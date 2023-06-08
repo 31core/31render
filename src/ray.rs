@@ -17,6 +17,7 @@ fn find_closest_hit(ray: &Ray, objects: &[Rc<dyn Object>]) -> Option<(f64, Rc<dy
     closest_object
 }
 
+#[derive(Clone)]
 pub struct Ray {
     pub origin: Point,
     pub direction: Vector3D,
@@ -37,11 +38,19 @@ impl Ray {
             if let Some((t, object)) = find_closest_hit(self, objects) {
                 let normal = object.normal(&self.point_at(t));
 
-                let ref_ray = object.material().reflect(self, t, &normal);
-
-                let mut color = ref_ray.trace(objects, depth - 1);
-                color.attenuate(object.material().attenuation());
-                return color;
+                match object.material().reflect(self, t, &normal) {
+                    Some(ref_ray) => {
+                        let mut color = ref_ray.trace(objects, depth - 1);
+                        color.attenuate(object.material().attenuation());
+                        return color;
+                    }
+                    /* light source */
+                    None => {
+                        let mut color = Color::new();
+                        color.color_vec = Vector3D::from(object.material().attenuation());
+                        return color;
+                    }
+                }
             }
         }
         let t = 0.5 * (self.direction.y + 1.);

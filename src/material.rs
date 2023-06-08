@@ -2,7 +2,7 @@ use super::ray::Ray;
 use super::vector::Vector3D;
 
 pub trait Material {
-    fn reflect(&self, ray: &Ray, length: f64, normal: &Vector3D) -> Ray;
+    fn reflect(&self, ray: &Ray, length: f64, normal: &Vector3D) -> Option<Ray>;
     fn attenuation(&self) -> (f64, f64, f64);
 }
 
@@ -22,14 +22,14 @@ impl Default for Metal {
 }
 
 impl Material for Metal {
-    fn reflect(&self, ray: &Ray, length: f64, normal: &Vector3D) -> Ray {
+    fn reflect(&self, ray: &Ray, length: f64, normal: &Vector3D) -> Option<Ray> {
         let mut ref_ray = ray.reflect(length, normal);
         if self.fuzz == 0. {
-            return ref_ray;
+            return Some(ref_ray);
         }
         ref_ray.direction += self.fuzz * Vector3D::new_random_unit();
         ref_ray.direction = ref_ray.direction.unit();
-        ref_ray
+        Some(ref_ray)
     }
     fn attenuation(&self) -> (f64, f64, f64) {
         self.attenuation
@@ -53,7 +53,7 @@ impl Default for Glass {
 }
 
 impl Material for Glass {
-    fn reflect(&self, ray: &Ray, length: f64, normal: &Vector3D) -> Ray {
+    fn reflect(&self, ray: &Ray, length: f64, normal: &Vector3D) -> Option<Ray> {
         let mut ref_ray = {
             if ray.direction.cdot(normal) < 0. {
                 ray.refract(length, self.rate, normal)
@@ -64,13 +64,25 @@ impl Material for Glass {
             }
         };
         if self.fuzz == 0. {
-            return ref_ray;
+            return Some(ref_ray);
         }
         ref_ray.direction += self.fuzz * Vector3D::new_random_unit();
         ref_ray.direction = ref_ray.direction.unit();
-        ref_ray
+        Some(ref_ray)
     }
     fn attenuation(&self) -> (f64, f64, f64) {
         self.attenuation
+    }
+}
+
+#[derive(Default)]
+pub struct Light {}
+
+impl Material for Light {
+    fn reflect(&self, _ray: &Ray, _length: f64, _normal: &Vector3D) -> Option<Ray> {
+        None
+    }
+    fn attenuation(&self) -> (f64, f64, f64) {
+        (1., 1., 1.)
     }
 }

@@ -77,6 +77,44 @@ impl Object for Sphere {
     }
 }
 
+pub struct Plane {
+    point: Point,
+    normal: Vector3D,
+    material: Rc<dyn Material>,
+}
+
+impl Plane {
+    pub fn new<M>(point: Point, normal: Vector3D, material: M) -> Self
+    where
+        M: Material + 'static,
+    {
+        Self {
+            point,
+            normal: normal.unit(),
+            material: Rc::new(material),
+        }
+    }
+}
+
+impl Object for Plane {
+    fn hit(&self, r: &Ray) -> Option<f64> {
+        let ap = r.origin.to_vec3d(&self.point);
+        let t_n = -ap.cdot(&self.normal);
+        let t = -t_n / r.direction.cdot(&self.normal);
+        if t > 0. {
+            Some(t)
+        } else {
+            None
+        }
+    }
+    fn normal(&self, _p: &Point) -> Vector3D {
+        self.normal
+    }
+    fn material(&self) -> Rc<dyn Material> {
+        Rc::clone(&self.material)
+    }
+}
+
 pub struct Viewport {
     pub width: f64,
     pub height: f64,

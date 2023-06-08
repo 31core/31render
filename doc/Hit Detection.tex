@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{tikz}
 \begin{document}
 \title{Hit Detection}
 \author{31core}
@@ -16,7 +17,15 @@ R = A + t\vec{B}
 
 \section{Hit detection of Sphere}
 \subsection{Mathematical proof}
-Because $\vec{CA}$ is perpendicular to $\vec{B}$, so we can get this equation.
+\begin{tikzpicture}
+\draw (0, 0) circle (1);
+\draw (0, 0)--(-1, -2)--(0.5, -1)--(0, 0);
+\node at(-1, -2.2) {A};
+\node at(-0.2, -1.8) {$\vec{B}$};
+\node at(0, .2) {C};
+\end{tikzpicture}
+
+Because $\vec{CA} + t_d\vec{B}$ is perpendicular to $\vec{B}$, so we can get this equation.
 
 $(\vec{CA} + t_d\vec{B})\vec{B} = 0$
 
@@ -28,11 +37,11 @@ Then calculate the distance from the center of the sphere to the ray:
 
 $d = |\vec{CA} + t_d\vec{B}|$
 
-If $d \le R$, the ray do hit the sphere.
-
 Finally, calculate the $t$.
 
 $t = \frac{|t_d\vec{B}| - \sqrt{R^2 - d^2}}{|\vec{B}|} = t_d - \sqrt{R^2 - d^2}$
+
+If $d \leq R$ and $t \textgreater 0$, the ray do hit the sphere.
 
 \subsection{Final formula}
 \begin{equation}
@@ -63,6 +72,25 @@ t = -\frac{2}{\vec{N} \cdot \vec{A}}
 
 \section{Refraction of Ray}
 \subsection{Mathematical proof}
+\begin{tikzpicture}
+%vector A
+\draw[->] (-1, 2)--(0, 0);
+%normal vector
+\draw[->] (0, 0)--(0, 2);
+\draw[->] (0, -2)--(0, 0);
+\draw (-2, 0)--(2, 0);
+%vector B
+\draw[->] (0, 0)--(0.6, -2);
+%vector C
+\draw[->] (-1, 2)--(0, 2);
+%vector D
+\draw[->] (0, -2)--(0.6, -2);
+\node at(-1, 1) {$\vec{A}$};
+\node at(0.6, -1) {$\vec{B}$};
+\node at(-0.5, 2.2) {$\vec{C}$};
+\node at(0.3, -2.2) {$\vec{D}$};
+\end{tikzpicture}
+
 $
 (\vec{A} + t\vec{N})\vec{N} = 0
 \rightarrow
@@ -80,6 +108,8 @@ $\vec{D} = \vec{B} + t\vec{N}$
 Then we express refraction rate(n) with $\vec{A}$, $\vec{B}$, $\vec{C}$ and $\vec{D}$:
 
 $
+\frac{sin<-\vec{A}, \vec{N}>}{sin<\vec{B}, \vec{N}>}
+=
 \frac{\frac{|\vec{C}|}{|\vec{A}|}}{\frac{|\vec{D}|}{|\vec{B}|}} = n
 \rightarrow
 \vec{D} = \frac{|\vec{D}|}{|\vec{C}|} \cdot \vec{C}
