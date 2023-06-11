@@ -11,7 +11,11 @@ fn main() {
     const SIZE_X: usize = 1920;
     const SIZE_Y: usize = 1080;
 
-    let render = render::Render::new(4., 4. * 8. / 16., SIZE_X, SIZE_Y);
+    let render = render::RenderBuilder::default()
+        .viewport(4., 4. * 8. / 16., SIZE_X, SIZE_Y)
+        .sample(10)
+        .max_depth(10)
+        .build();
     let mut objects: Vec<Rc<dyn Object>> = Vec::new();
 
     /* left */
@@ -47,6 +51,6 @@ fn main() {
 
     render
         .rend(&objects)
-        .save("out.ppm", ppm::PPMType::P3)
+        .save("out.ppm", ppm::PPMType::P6)
         .unwrap();
 }

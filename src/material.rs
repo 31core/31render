@@ -75,14 +75,27 @@ impl Material for Glass {
     }
 }
 
-#[derive(Default)]
-pub struct Light {}
+pub struct Light {
+    intensity: f64,
+}
+
+impl Light {
+    pub fn new(intensity: f64) -> Self {
+        Self { intensity }
+    }
+}
+
+impl Default for Light {
+    fn default() -> Self {
+        Self { intensity: 1. }
+    }
+}
 
 impl Material for Light {
     fn reflect(&self, _ray: &Ray, _length: f64, _normal: &Vector3D) -> Option<Ray> {
         None
     }
     fn attenuation(&self) -> (f64, f64, f64) {
-        (1., 1., 1.)
+        (self.intensity, self.intensity, self.intensity)
     }
 }

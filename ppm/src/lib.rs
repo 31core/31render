@@ -40,7 +40,7 @@ impl Image {
             PPMType::P6 => f.write_all("P6\n".as_bytes())?,
         }
         f.write_all(format!("{} {}\n", self.width, self.height).as_bytes())?;
-        f.write_all("256\n".as_bytes())?;
+        f.write_all("255\n".as_bytes())?;
         for pixel in &self.pixels {
             match ppm_type {
                 PPMType::P3 => {

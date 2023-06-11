@@ -115,6 +115,7 @@ impl Object for Plane {
     }
 }
 
+#[derive(Default)]
 pub struct Viewport {
     pub width: f64,
     pub height: f64,
