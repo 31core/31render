@@ -1,11 +1,11 @@
 mod color;
-mod cordinate;
+mod coordinate;
 mod material;
 mod ray;
 mod render;
 mod vector;
 
-use cordinate::*;
+use coordinate::*;
 use std::rc::Rc;
 fn main() {
     const SIZE_X: usize = 1920;

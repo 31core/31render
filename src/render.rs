@@ -1,5 +1,5 @@
 use super::color::Color;
-use super::cordinate::*;
+use super::coordinate::*;
 use std::rc::Rc;
 
 pub struct Render {

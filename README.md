@@ -3,8 +3,9 @@
 31render is a simple ray tracing render written in Rust.
 
 ## Features
-* Rendering of spheres
+* Rendering of different objects
 * RGB image output in `.ppm` format
+* Antialiasing & random sampling
 
 ## Bugs & Reports
 You can report a bug or share your ideas by email `31core@tutanota.com`.
