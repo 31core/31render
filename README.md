@@ -1,6 +1,6 @@
 # 31render
 ## Introduction
-31render is a simple ray tracing render written in Rust.
+31render is a simple ray tracing renderer written in Rust.
 
 ## Features
 * Rendering of different objects

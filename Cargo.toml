@@ -9,4 +9,5 @@ path = "src/main.rs"
 
 [dependencies]
 ppm = { path = "ppm" }
+obj = { path = "obj" }
 rand = "0.8.5"
