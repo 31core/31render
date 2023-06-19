@@ -1,4 +1,4 @@
-use super::vector::Vector3D;
+use crate::vector::Vector3D;
 
 pub struct Color {
     pub color_vec: Vector3D,

@@ -1,6 +1,6 @@
-use super::material::*;
-use super::ray::Ray;
-use super::vector::Vector3D;
+use crate::material::*;
+use crate::ray::Ray;
+use crate::vector::Vector3D;
 use rand::Rng;
 use std::rc::Rc;
 
@@ -183,6 +183,17 @@ impl Triangle {
             p3,
             material: Rc::new(material),
         }
+    }
+    pub fn from_obj<M>(face: &obj::element::Face, material: M) -> Self
+    where
+        M: Material + 'static,
+    {
+        Self::new(
+            Point::new(face.vertexes[0].x, face.vertexes[0].y, face.vertexes[0].z),
+            Point::new(face.vertexes[1].x, face.vertexes[1].y, face.vertexes[1].z),
+            Point::new(face.vertexes[2].x, face.vertexes[2].y, face.vertexes[2].z),
+            material,
+        )
     }
     fn get_normal(&self) -> Vector3D {
         (self.p1.to_vec3d(&self.p2) * self.p1.to_vec3d(&self.p3)).unit()

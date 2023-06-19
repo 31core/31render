@@ -1,5 +1,5 @@
-use super::ray::Ray;
-use super::vector::Vector3D;
+use crate::ray::Ray;
+use crate::vector::Vector3D;
 
 pub trait Material {
     fn reflect(&self, ray: &Ray, length: f64, normal: &Vector3D) -> Option<Ray>;

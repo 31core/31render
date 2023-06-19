@@ -6,3 +6,4 @@ authers = ["31core"]
 licnese = "MIT"
 
 [dependencies]
+mtl = { path = "../mtl" }

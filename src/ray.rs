@@ -1,6 +1,6 @@
-use super::color::Color;
-use super::coordinate::*;
-use super::vector::*;
+use crate::color::Color;
+use crate::coordinate::*;
+use crate::vector::*;
 use std::rc::Rc;
 
 fn find_closest_hit(ray: &Ray, objects: &[Rc<dyn Object>]) -> Option<(f64, Rc<dyn Object>)> {
