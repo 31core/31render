@@ -37,6 +37,15 @@ fn main() -> std::io::Result<()> {
                         ..Default::default()
                     },
                 )));
+            } else {
+                let fuzz = get_fuzz(&face.materials);
+                objects.push(Rc::new(Polygon::from_obj(
+                    face,
+                    material::Metal {
+                        fuzz,
+                        ..Default::default()
+                    },
+                )));
             }
         }
     }

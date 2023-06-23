@@ -1,6 +1,14 @@
 use crate::material::Material;
 use std::collections::HashMap;
 
+fn find_next_token(tokens: &[&str]) -> usize {
+    let mut t = 1;
+    while t < tokens.len() && tokens[t].is_empty() {
+        t += 1;
+    }
+    t
+}
+
 pub fn parse_mtl(mtl_content: &str) -> HashMap<String, Vec<Material>> {
     let mtl_content = mtl_content.replace('\n', " ");
     let tokens = mtl_content.split(' ').collect::<Vec<&str>>();
@@ -10,23 +18,24 @@ pub fn parse_mtl(mtl_content: &str) -> HashMap<String, Vec<Material>> {
     let mut t = 0;
     while t < tokens.len() {
         if tokens[t] == "Ns" {
-            let value = tokens[t + 1].parse().unwrap();
+            t += find_next_token(&tokens[t..]);
+            let value = tokens[t].parse().unwrap();
             let ns = Material::Ns(value);
             materials.get_mut(&current_mtl).unwrap().push(ns);
             t += 1;
         }
         if tokens[t] == "Ni" {
-            let value = tokens[t + 1].parse().unwrap();
+            t += find_next_token(&tokens[t..]);
+            let value = tokens[t].parse().unwrap();
             let ns = Material::Ni(value);
             materials.get_mut(&current_mtl).unwrap().push(ns);
-            t += 1;
         }
         if tokens[t] == "newmtl" {
-            current_mtl = tokens[t + 1].parse().unwrap();
+            t += find_next_token(&tokens[t..]);
+            current_mtl = tokens[t].parse().unwrap();
             materials.insert(current_mtl.clone(), Vec::new());
-            t += 1;
         }
-        t += 1;
+        t += find_next_token(&tokens[t..]);
     }
     materials
 }

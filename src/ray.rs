@@ -53,10 +53,9 @@ impl Ray {
                 }
             }
         }
-        let t = 0.5 * (self.direction.y + 1.);
+
         let mut color = Color::new();
-        color.color_vec = t * Vector3D::new(0.3, 0.5, 0.7);
-        color.color_vec += (1. - t) * Vector3D::new(1., 1., 1.);
+        color.color_vec = Vector3D::new(0., 0., 0.);
         color
     }
     /**

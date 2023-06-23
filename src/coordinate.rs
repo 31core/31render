@@ -18,44 +18,6 @@ fn plane_hit(ray: &Ray, p: &Point, normal: &Vector3D) -> Option<f64> {
     }
 }
 
-/**
- * Check if a point in a triangle
-*/
-fn point_in_triangle(p: &Point, p1: &Point, p2: &Point, p3: &Point) -> bool {
-    let ap = p1.to_vec3d(p);
-    let vec_a = p1.to_vec3d(p2);
-    let vec_b = p1.to_vec3d(p3);
-
-    /*
-    d = |x_a x_b|
-        |y_a y_b|
-    */
-    let d = vec_a.x * vec_b.y - vec_a.y * vec_b.x;
-    if d != 0. {
-        let u = (ap.x * vec_b.y - ap.y * vec_b.x) / d;
-        let v = (vec_a.x * ap.y - vec_a.y * ap.x) / d;
-        return u >= 0. && v >= 0. && u + v <= 1.;
-    }
-    /*
-    d = |y_a y_b|
-        |z_a z_b|
-    */
-    let d = vec_a.y * vec_b.z - vec_a.z * vec_b.y;
-    if d != 0. {
-        let u = (ap.y * vec_b.z - ap.z * vec_b.y) / d;
-        let v = (vec_a.y * ap.z - vec_a.z * ap.y) / d;
-        return u >= 0. && v >= 0. && u + v <= 1.;
-    }
-    /*
-    d = |x_a x_b|
-        |z_a z_b|
-    */
-    let d = vec_a.x * vec_b.z - vec_a.z * vec_b.x;
-    let u = (ap.x * vec_b.z - ap.z * vec_b.x) / d;
-    let v = (vec_a.x * ap.z - vec_a.z * ap.x) / d;
-    u >= 0. && v >= 0. && u + v <= 1.
-}
-
 pub trait Object {
     fn hit(&self, r: &Ray) -> Option<f64>;
     fn normal(&self, p: &Point) -> Vector3D;
@@ -84,6 +46,9 @@ impl Point {
     pub fn from_vec3d(vector: Vector3D) -> Self {
         Self { vector }
     }
+    pub fn from_obj(v: &obj::vertex::Vertex) -> Self {
+        Self::new(v.x, v.y, v.z)
+    }
 }
 
 pub struct Sphere {
@@ -93,6 +58,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
+    #[allow(dead_code)]
     pub fn new<M>(center: Point, radius: f64, material: M) -> Self
     where
         M: Material + 'static,
@@ -141,6 +107,7 @@ pub struct Plane {
 }
 
 impl Plane {
+    #[allow(dead_code)]
     pub fn new<M>(point: Point, normal: Vector3D, material: M) -> Self
     where
         M: Material + 'static,
@@ -189,9 +156,9 @@ impl Triangle {
         M: Material + 'static,
     {
         Self::new(
-            Point::new(face.vertexes[0].x, face.vertexes[0].y, face.vertexes[0].z),
-            Point::new(face.vertexes[1].x, face.vertexes[1].y, face.vertexes[1].z),
-            Point::new(face.vertexes[2].x, face.vertexes[2].y, face.vertexes[2].z),
+            Point::from_obj(&face.vertexes[0]),
+            Point::from_obj(&face.vertexes[1]),
+            Point::from_obj(&face.vertexes[2]),
             material,
         )
     }
@@ -202,8 +169,50 @@ impl Triangle {
 
 impl Object for Triangle {
     fn hit(&self, r: &Ray) -> Option<f64> {
-        plane_hit(r, &self.p1, &self.get_normal())
-            .filter(|&t| point_in_triangle(&r.point_at(t), &self.p1, &self.p2, &self.p3))
+        let vec_a = r.origin.to_vec3d(&self.p1);
+        let vec_b = r.origin.to_vec3d(&self.p2);
+        let vec_c = r.origin.to_vec3d(&self.p3);
+        /*
+        d = |x_a x_b x_c|
+            |y_a y_b y_c|
+            |z_a z_b z_c|
+         */
+        let d =
+            vec_a.x * vec_b.y * vec_c.z + vec_b.x * vec_c.y * vec_a.z + vec_a.y * vec_b.z * vec_c.x
+                - vec_c.x * vec_b.y * vec_a.z
+                - vec_b.x * vec_a.y * vec_c.z
+                - vec_c.y * vec_b.z * vec_a.x;
+        let u = (r.direction.x * vec_b.y * vec_c.z
+            + vec_b.x * vec_c.y * r.direction.z
+            + r.direction.y * vec_b.z * vec_c.x
+            - vec_c.x * vec_b.y * r.direction.z
+            - vec_b.x * r.direction.y * vec_c.z
+            - vec_c.y * vec_b.z * r.direction.x)
+            / d;
+        if u < 0. {
+            return None;
+        }
+        let v = (vec_a.x * r.direction.y * vec_c.z
+            + r.direction.x * vec_c.y * vec_a.z
+            + vec_a.y * r.direction.z * vec_c.x
+            - vec_c.x * r.direction.y * vec_a.z
+            - r.direction.x * vec_a.y * vec_c.z
+            - vec_c.y * r.direction.z * vec_a.x)
+            / d;
+        if v < 0. {
+            return None;
+        }
+        let w = (vec_a.x * vec_b.y * r.direction.z
+            + vec_b.x * r.direction.y * vec_a.z
+            + vec_a.y * vec_b.z * r.direction.x
+            - r.direction.x * vec_b.y * vec_a.z
+            - vec_b.x * vec_a.y * r.direction.z
+            - r.direction.y * vec_b.z * vec_a.x)
+            / d;
+        if w < 0. {
+            return None;
+        }
+        plane_hit(r, &self.p1, &self.normal(&self.p1))
     }
     fn material(&self) -> Rc<dyn Material> {
         Rc::clone(&self.material)
@@ -213,55 +222,58 @@ impl Object for Triangle {
     }
 }
 
-pub struct Parallelogram {
-    p_top: Point,
-    p_side1: Point,
-    p_side2: Point,
+pub struct Polygon {
+    triangles: Vec<Triangle>,
     material: Rc<dyn Material>,
 }
 
-impl Parallelogram {
-    pub fn new<M>(p_top: Point, p_side1: Point, p_side2: Point, material: M) -> Self
+impl Polygon {
+    pub fn new<M>(points: &[Point], material: M) -> Self
     where
-        M: Material + 'static,
+        M: Material + Copy + 'static,
     {
+        let mut triangles = Vec::new();
+        let mut p = 1;
+        while p + 1 < points.len() {
+            triangles.push(Triangle::new(
+                points[0].clone(),
+                points[p].clone(),
+                points[p + 1].clone(),
+                material,
+            ));
+            p += 1;
+        }
         Self {
-            p_top,
-            p_side1,
-            p_side2,
+            triangles,
             material: Rc::new(material),
         }
     }
-    fn get_normal(&self) -> Vector3D {
-        (self.p_top.to_vec3d(&self.p_side1) * self.p_top.to_vec3d(&self.p_side2)).unit()
+    pub fn from_obj<M>(face: &obj::element::Face, material: M) -> Self
+    where
+        M: Material + Copy + 'static,
+    {
+        let mut points = Vec::new();
+        for v in &face.vertexes {
+            points.push(Point::from_obj(v));
+        }
+        Self::new(&points, material)
     }
 }
 
-impl Object for Parallelogram {
+impl Object for Polygon {
     fn hit(&self, r: &Ray) -> Option<f64> {
-        match plane_hit(r, &self.p_top, &self.get_normal()) {
-            Some(t) => {
-                let p_bottom = Point::from_vec3d(
-                    self.p_top.to_vec3d(&self.p_side1)
-                        + self.p_top.to_vec3d(&self.p_side2)
-                        + Point::origin_point().to_vec3d(&self.p_top),
-                );
-                if point_in_triangle(&r.point_at(t), &self.p_top, &self.p_side1, &self.p_side2)
-                    || point_in_triangle(&r.point_at(t), &p_bottom, &self.p_side1, &self.p_side2)
-                {
-                    Some(t)
-                } else {
-                    None
-                }
+        for t in &self.triangles {
+            if let Some(t) = t.hit(r) {
+                return Some(t);
             }
-            None => None,
         }
+        None
     }
     fn material(&self) -> Rc<dyn Material> {
         Rc::clone(&self.material)
     }
     fn normal(&self, _p: &Point) -> Vector3D {
-        self.get_normal()
+        self.triangles[0].get_normal()
     }
 }
 

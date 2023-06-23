@@ -75,11 +75,13 @@ impl Material for Glass {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Light {
     intensity: f64,
 }
 
 impl Light {
+    #[allow(dead_code)]
     pub fn new(intensity: f64) -> Self {
         Self { intensity }
     }

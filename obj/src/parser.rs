@@ -4,8 +4,16 @@ use mtl::material::Material;
 use std::any::Any;
 use std::collections::HashMap;
 
-fn is_type(param: &str) -> bool {
-    let types = ["v", "f"];
+fn find_next_token(tokens: &[&str]) -> usize {
+    let mut t = 1;
+    while t < tokens.len() && tokens[t].is_empty() {
+        t += 1;
+    }
+    t
+}
+
+fn is_keyword(param: &str) -> bool {
+    let types = ["v", "f", "o"];
     for i in types {
         if param == i {
             return true;
@@ -38,7 +46,7 @@ pub fn parse_obj(obj_content: &str) -> Vec<Box<dyn Any>> {
             let mut last_vertex = 0;
             let mut v = Vertex::default();
             loop {
-                t += 1;
+                t += find_next_token(&tokens[t..]);
                 if !tokens[t].is_empty() {
                     match last_vertex {
                         0 => v.x = tokens[t].parse::<f64>().unwrap(),
@@ -60,8 +68,8 @@ pub fn parse_obj(obj_content: &str) -> Vec<Box<dyn Any>> {
                 f.materials = mtllib.get(&usemtl).unwrap().clone();
             }
             loop {
-                t += 1;
-                if t == tokens.len() || is_type(tokens[t]) {
+                t += find_next_token(&tokens[t..]);
+                if t == tokens.len() || is_keyword(tokens[t]) {
                     t -= 1;
                     break;
                 }
@@ -73,14 +81,14 @@ pub fn parse_obj(obj_content: &str) -> Vec<Box<dyn Any>> {
             objects.push(Box::new(f));
         }
         if tokens[t] == "mtllib" {
-            mtllib = mtl::parser::parse_mtl(&std::fs::read_to_string(&tokens[t + 1]).unwrap());
-            t += 1;
+            t += find_next_token(&tokens[t..]);
+            mtllib = mtl::parser::parse_mtl(&std::fs::read_to_string(&tokens[t]).unwrap());
         }
         if tokens[t] == "usemtl" {
-            usemtl = tokens[t + 1].to_owned();
-            t += 1;
+            t += find_next_token(&tokens[t..]);
+            usemtl = tokens[t].to_owned();
         }
-        t += 1;
+        t += find_next_token(&tokens[t..]);
     }
     objects
 }
