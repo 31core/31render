@@ -1,8 +1,33 @@
+use crate::bvh::BoarderDedection;
 use crate::material::*;
 use crate::ray::Ray;
 use crate::vector::Vector3D;
 use rand::Rng;
 use std::rc::Rc;
+
+macro_rules! max {
+    ($a: expr, $b: expr, $c: expr) => {
+        if $a > $b && $a > $c {
+            $a
+        } else if $b > $c {
+            $b
+        } else {
+            $c
+        }
+    };
+}
+
+macro_rules! min {
+    ($a: expr, $b: expr, $c: expr) => {
+        if $a < $b && $a < $c {
+            $a
+        } else if $b < $c {
+            $b
+        } else {
+            $c
+        }
+    };
+}
 
 /**
  * Check if a ray hit a plane
@@ -18,13 +43,13 @@ fn plane_hit(ray: &Ray, p: &Point, normal: &Vector3D) -> Option<f64> {
     }
 }
 
-pub trait Object {
+pub trait Object: crate::bvh::BoarderDedection {
     fn hit(&self, r: &Ray) -> Option<f64>;
     fn normal(&self, p: &Point) -> Vector3D;
     fn material(&self) -> Rc<dyn Material>;
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Point {
     pub vector: Vector3D,
 }
@@ -39,6 +64,15 @@ impl Point {
         Self {
             vector: Vector3D::new(0., 0., 0.),
         }
+    }
+    pub fn x(&self) -> f64 {
+        self.vector.x
+    }
+    pub fn y(&self) -> f64 {
+        self.vector.y
+    }
+    pub fn z(&self) -> f64 {
+        self.vector.z
     }
     pub fn to_vec3d(&self, other: &Self) -> Vector3D {
         -self.vector + other.vector
@@ -71,6 +105,27 @@ impl Sphere {
     }
 }
 
+impl BoarderDedection for Sphere {
+    fn x_max(&self) -> f64 {
+        self.center.x() + self.radius
+    }
+    fn x_min(&self) -> f64 {
+        self.center.x() - self.radius
+    }
+    fn y_max(&self) -> f64 {
+        self.center.y() + self.radius
+    }
+    fn y_min(&self) -> f64 {
+        self.center.y() - self.radius
+    }
+    fn z_max(&self) -> f64 {
+        self.center.z() + self.radius
+    }
+    fn z_min(&self) -> f64 {
+        self.center.z() - self.radius
+    }
+}
+
 impl Object for Sphere {
     fn hit(&self, ray: &Ray) -> Option<f64> {
         let ca = self.center.to_vec3d(&ray.origin);
@@ -94,38 +149,6 @@ impl Object for Sphere {
     }
     fn normal(&self, p: &Point) -> Vector3D {
         self.center.to_vec3d(p).unit()
-    }
-    fn material(&self) -> Rc<dyn Material> {
-        Rc::clone(&self.material)
-    }
-}
-
-pub struct Plane {
-    point: Point,
-    normal: Vector3D,
-    material: Rc<dyn Material>,
-}
-
-impl Plane {
-    #[allow(dead_code)]
-    pub fn new<M>(point: Point, normal: Vector3D, material: M) -> Self
-    where
-        M: Material + 'static,
-    {
-        Self {
-            point,
-            normal: normal.unit(),
-            material: Rc::new(material),
-        }
-    }
-}
-
-impl Object for Plane {
-    fn hit(&self, r: &Ray) -> Option<f64> {
-        plane_hit(r, &self.point, &self.normal)
-    }
-    fn normal(&self, _p: &Point) -> Vector3D {
-        self.normal
     }
     fn material(&self) -> Rc<dyn Material> {
         Rc::clone(&self.material)
@@ -164,6 +187,27 @@ impl Triangle {
     }
     fn get_normal(&self) -> Vector3D {
         (self.p1.to_vec3d(&self.p2) * self.p1.to_vec3d(&self.p3)).unit()
+    }
+}
+
+impl BoarderDedection for Triangle {
+    fn x_max(&self) -> f64 {
+        max!(self.p1.x(), self.p2.x(), self.p3.x())
+    }
+    fn x_min(&self) -> f64 {
+        min!(self.p1.x(), self.p2.x(), self.p3.x())
+    }
+    fn y_max(&self) -> f64 {
+        max!(self.p1.y(), self.p2.y(), self.p3.y())
+    }
+    fn y_min(&self) -> f64 {
+        min!(self.p1.y(), self.p2.y(), self.p3.y())
+    }
+    fn z_max(&self) -> f64 {
+        max!(self.p1.z(), self.p2.z(), self.p3.z())
+    }
+    fn z_min(&self) -> f64 {
+        min!(self.p1.z(), self.p2.z(), self.p3.z())
     }
 }
 
@@ -257,6 +301,63 @@ impl Polygon {
             points.push(Point::from_obj(v));
         }
         Self::new(&points, material)
+    }
+}
+
+impl BoarderDedection for Polygon {
+    fn x_max(&self) -> f64 {
+        let mut max = self.triangles[0].x_max();
+        for tri in &self.triangles {
+            if tri.x_max() > max {
+                max = tri.x_max();
+            }
+        }
+        max
+    }
+    fn x_min(&self) -> f64 {
+        let mut min = self.triangles[0].x_min();
+        for tri in &self.triangles {
+            if tri.x_min() > min {
+                min = tri.x_min();
+            }
+        }
+        min
+    }
+    fn y_max(&self) -> f64 {
+        let mut max = self.triangles[0].y_max();
+        for tri in &self.triangles {
+            if tri.y_max() > max {
+                max = tri.y_max();
+            }
+        }
+        max
+    }
+    fn y_min(&self) -> f64 {
+        let mut min = self.triangles[0].y_min();
+        for tri in &self.triangles {
+            if tri.y_min() > min {
+                min = tri.y_min();
+            }
+        }
+        min
+    }
+    fn z_max(&self) -> f64 {
+        let mut max = self.triangles[0].z_max();
+        for tri in &self.triangles {
+            if tri.z_max() > max {
+                max = tri.z_max();
+            }
+        }
+        max
+    }
+    fn z_min(&self) -> f64 {
+        let mut min = self.triangles[0].z_min();
+        for tri in &self.triangles {
+            if tri.z_min() > min {
+                min = tri.z_min();
+            }
+        }
+        min
     }
 }
 

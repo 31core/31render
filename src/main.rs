@@ -1,3 +1,4 @@
+mod bvh;
 mod color;
 mod coordinate;
 mod material;
@@ -50,12 +51,14 @@ fn main() -> std::io::Result<()> {
         }
     }
 
+    let bvh = bvh::BVHNode::build(&objects, 10);
+
     let render = render::RenderBuilder::default()
         .viewport(4., 4. * 8. / 16., SIZE_X, SIZE_Y)
         .sample(1)
         .max_depth(10)
         .build();
 
-    render.rend(&objects).save("out.ppm", ppm::PPMType::P6)?;
+    render.render(&bvh).save("out.ppm", ppm::PPMType::P6)?;
     Ok(())
 }

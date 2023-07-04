@@ -1,6 +1,6 @@
+use crate::bvh::BVHNode;
 use crate::color::Color;
 use crate::coordinate::*;
-use std::rc::Rc;
 
 pub struct Render {
     viewport: Viewport,
@@ -9,7 +9,7 @@ pub struct Render {
 }
 
 impl Render {
-    pub fn rend(&self, objects: &[Rc<dyn Object>]) -> ppm::Image {
+    pub fn render(&self, bvh: &BVHNode) -> ppm::Image {
         let mut image = ppm::Image::new(self.viewport.pixel_x, self.viewport.pixel_y);
 
         for y in 0..self.viewport.pixel_y {
@@ -19,13 +19,13 @@ impl Render {
                     color.color_vec = super::vector::Vector3D::new(0., 0., 0.);
                     for _ in 0..self.sample {
                         let ray = self.viewport.get_ray_random(x, y);
-                        color.color_vec += ray.trace(objects, self.max_depth).color_vec;
+                        color.color_vec += ray.trace(bvh, self.max_depth).color_vec;
                     }
                     color.color_vec = color.color_vec / self.sample as f64;
                     image.set_pixel(x, y, color.to_rgb());
                 } else {
                     let ray = self.viewport.get_ray_central(x, y);
-                    let color = ray.trace(objects, self.max_depth);
+                    let color = ray.trace(bvh, self.max_depth);
                     image.set_pixel(x, y, color.to_rgb());
                 }
             }

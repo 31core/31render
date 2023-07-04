@@ -1,7 +1,7 @@
 use rand::Rng;
 use std::ops::*;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vector3D {
     pub x: f64,
     pub y: f64,
