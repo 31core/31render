@@ -2,21 +2,6 @@ use crate::bvh::BVHNode;
 use crate::color::Color;
 use crate::coordinate::*;
 use crate::vector::*;
-use std::rc::Rc;
-
-fn find_closest_hit(ray: &Ray, bvh: &BVHNode) -> Option<(f64, Rc<dyn Object>)> {
-    let mut closest = 0.;
-    let mut closest_object = None;
-    for object in bvh.find_objects(ray) {
-        if let Some(t) = object.hit(ray) {
-            if closest == 0. || t < closest {
-                closest = t;
-                closest_object = Some((t, Rc::clone(&object)));
-            }
-        }
-    }
-    closest_object
-}
 
 #[derive(Clone)]
 pub struct Ray {
@@ -36,7 +21,7 @@ impl Ray {
      */
     pub fn trace(&self, bvh: &BVHNode, depth: usize) -> Color {
         if depth > 0 {
-            if let Some((t, object)) = find_closest_hit(self, bvh) {
+            if let Some((t, object)) = bvh.find_closest_hit(self) {
                 let normal = object.normal(&self.point_at(t));
 
                 match object.material().reflect(self, t, &normal) {
