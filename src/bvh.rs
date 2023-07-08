@@ -137,6 +137,10 @@ impl BVHNode {
         }
         node
     }
+
+    /**
+     * Check if a ray hits this AABB Box.
+     */
     pub fn hit(&self, ray: &Ray) -> bool {
         fn max3(a: f64, b: f64, c: f64) -> f64 {
             if a > b && a > c {
@@ -181,6 +185,10 @@ impl BVHNode {
         let t_min = min3(x_far, y_far, z_far);
         t_max >= 0. && t_min > 0. && t_max <= t_min
     }
+
+    /**
+     * Search the whole tree to find the closest object to hit.
+    */
     pub fn find_closest_hit(&self, ray: &Ray) -> Option<(f64, Rc<dyn Object>)> {
         if !self.hit(ray) {
             return None;

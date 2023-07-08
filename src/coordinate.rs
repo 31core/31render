@@ -388,6 +388,9 @@ pub struct Viewport {
     pub at: Vector3D,
     pub top: Vector3D,
     pub left: Vector3D,
+
+    x_unit: f64,
+    y_unit: f64,
 }
 
 impl Viewport {
@@ -411,6 +414,8 @@ impl Viewport {
             at,
             top,
             left,
+            x_unit: width / pixel_x as f64,
+            y_unit: height / pixel_y as f64,
         }
     }
     pub fn get_ray_central(&self, x: usize, y: usize) -> Ray {
@@ -424,8 +429,8 @@ impl Viewport {
         } else {
             (self.pixel_y / 2) as isize - y as isize
         };
-        let x_vec = x as f64 / self.pixel_x as f64 * self.left;
-        let y_vec = y as f64 / self.pixel_y as f64 * self.top;
+        let x_vec = x as f64 / (self.pixel_x as f64 / 2.) * self.left;
+        let y_vec = y as f64 / (self.pixel_y as f64 / 2.) * self.top;
         let direction = self.at + x_vec + y_vec;
         Ray::new(self.origin.clone(), direction)
     }
@@ -440,13 +445,11 @@ impl Viewport {
         } else {
             (self.pixel_y / 2) as isize - y as isize
         };
-        let x_vec = x as f64 / self.pixel_x as f64 * self.left;
-        let y_vec = y as f64 / self.pixel_y as f64 * self.top;
-        let x_unit = self.width / self.pixel_x as f64;
-        let y_unit = self.height / self.pixel_y as f64;
+        let x_vec = x as f64 / (self.pixel_x as f64 / 2.) * self.left;
+        let y_vec = y as f64 / (self.pixel_y as f64 / 2.) * self.top;
 
-        let x_vec = x_unit * Vector3D::new_random_unit() + x_vec;
-        let y_vec = y_unit * Vector3D::new_random_unit() + y_vec;
+        let x_vec = self.x_unit * Vector3D::new_random_unit() + x_vec;
+        let y_vec = self.y_unit * Vector3D::new_random_unit() + y_vec;
         let direction = self.at + x_vec + y_vec;
         Ray::new(self.origin.clone(), direction)
     }
