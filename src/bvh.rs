@@ -130,9 +130,9 @@ impl BVHNode {
                 }
             }
 
-            let subnode = Self::build(&left_objects.unwrap(), capability);
+            let subnode = Self::build(left_objects.unwrap(), capability);
             node.nodes.push(subnode);
-            let subnode = Self::build(&right_objects.unwrap(), capability);
+            let subnode = Self::build(right_objects.unwrap(), capability);
             node.nodes.push(subnode);
         }
         node

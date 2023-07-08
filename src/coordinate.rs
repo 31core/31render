@@ -2,7 +2,6 @@ use crate::bvh::BoarderDedection;
 use crate::material::*;
 use crate::ray::Ray;
 use crate::vector::Vector3D;
-use rand::Rng;
 use std::rc::Rc;
 
 macro_rules! max {
@@ -384,38 +383,119 @@ pub struct Viewport {
     pub height: f64,
     pub pixel_x: usize,
     pub pixel_y: usize,
-    pub focal: f64,
+
+    pub origin: Point,
+    pub at: Vector3D,
+    pub top: Vector3D,
+    pub left: Vector3D,
 }
 
 impl Viewport {
-    pub fn new(width: f64, height: f64, pixel_x: usize, pixel_y: usize) -> Self {
+    pub fn new(
+        width: f64,
+        height: f64,
+        pixel_x: usize,
+        pixel_y: usize,
+        origin: Point,
+        at: Vector3D,
+        scale: f64,
+    ) -> Self {
+        let top = height / 2. * Vector3D::new(scale, 1., 0.).unit();
+        let left = width / 2. * -(at * top).unit();
         Self {
             width,
             height,
             pixel_x,
             pixel_y,
-            focal: -1.,
+            origin,
+            at,
+            top,
+            left,
         }
     }
     pub fn get_ray_central(&self, x: usize, y: usize) -> Ray {
-        let mut start = Vector3D::new(-self.width * 0.5, self.height * 0.5, self.focal);
-
-        let x_unit = self.width / self.pixel_x as f64;
-        let y_unit = self.height / self.pixel_y as f64;
-        start.x += x_unit * x as f64 + 0.5 * x_unit;
-        start.y -= y_unit * y as f64 + 0.5 * y_unit;
-        let direction = start - Vector3D::new(0., 0., 0.);
-        Ray::new(Point::origin_point(), direction)
+        let x = if x > self.pixel_x {
+            (self.pixel_x / 2) as isize - (x - self.pixel_x) as isize
+        } else {
+            (self.pixel_x / 2) as isize - x as isize
+        };
+        let y = if y > self.pixel_y {
+            (self.pixel_y / 2) as isize - (y - self.pixel_y) as isize
+        } else {
+            (self.pixel_y / 2) as isize - y as isize
+        };
+        let x_vec = x as f64 / self.pixel_x as f64 * self.left;
+        let y_vec = y as f64 / self.pixel_y as f64 * self.top;
+        let direction = self.at + x_vec + y_vec;
+        Ray::new(self.origin.clone(), direction)
     }
     pub fn get_ray_random(&self, x: usize, y: usize) -> Ray {
-        let mut start = Vector3D::new(-self.width * 0.5, self.height * 0.5, self.focal);
+        let x = if x > self.pixel_x {
+            (self.pixel_x / 2) as isize - (x - self.pixel_x) as isize
+        } else {
+            (self.pixel_x / 2) as isize - x as isize
+        };
+        let y = if y > self.pixel_y {
+            (self.pixel_y / 2) as isize - (y - self.pixel_y) as isize
+        } else {
+            (self.pixel_y / 2) as isize - y as isize
+        };
+        let x_vec = x as f64 / self.pixel_x as f64 * self.left;
+        let y_vec = y as f64 / self.pixel_y as f64 * self.top;
         let x_unit = self.width / self.pixel_x as f64;
         let y_unit = self.height / self.pixel_y as f64;
 
-        let mut rng = rand::thread_rng();
-        start.x += x_unit * x as f64 + rng.gen_range(0.0..x_unit);
-        start.y -= y_unit * y as f64 + rng.gen_range(0.0..y_unit);
-        let direction = start - Vector3D::new(0., 0., 0.);
-        Ray::new(Point::origin_point(), direction)
+        let x_vec = x_unit * Vector3D::new_random_unit() + x_vec;
+        let y_vec = y_unit * Vector3D::new_random_unit() + y_vec;
+        let direction = self.at + x_vec + y_vec;
+        Ray::new(self.origin.clone(), direction)
+    }
+}
+
+#[derive(Default)]
+pub struct ViewportBuilder {
+    width: f64,
+    height: f64,
+    pixel_x: usize,
+    pixel_y: usize,
+
+    origin: Point,
+    at: Vector3D,
+    scale: f64,
+}
+
+impl ViewportBuilder {
+    pub fn build(self) -> Viewport {
+        Viewport::new(
+            self.width,
+            self.height,
+            self.pixel_x,
+            self.pixel_y,
+            self.origin,
+            self.at,
+            self.scale,
+        )
+    }
+    pub fn at(mut self, at: Vector3D) -> Self {
+        self.at = at;
+        self
+    }
+    pub fn origin(mut self, origin: Point) -> Self {
+        self.origin = origin;
+        self
+    }
+    pub fn area(mut self, width: f64, height: f64) -> Self {
+        self.width = width;
+        self.height = height;
+        self
+    }
+    pub fn size(mut self, pixel_x: usize, pixel_y: usize) -> Self {
+        self.pixel_x = pixel_x;
+        self.pixel_y = pixel_y;
+        self
+    }
+    pub fn scale(mut self, scale: f64) -> Self {
+        self.scale = scale;
+        self
     }
 }

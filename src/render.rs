@@ -50,8 +50,8 @@ impl RenderBuilder {
         self.max_depth = max_depth;
         self
     }
-    pub fn viewport(mut self, width: f64, height: f64, pixel_x: usize, pixel_y: usize) -> Self {
-        self.viewport = Viewport::new(width, height, pixel_x, pixel_y);
+    pub fn viewport(mut self, viewport: Viewport) -> Self {
+        self.viewport = viewport;
         self
     }
     pub fn build(self) -> Render {

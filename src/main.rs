@@ -53,8 +53,16 @@ fn main() -> std::io::Result<()> {
 
     let bvh = bvh::BVHNode::build(&objects, 10);
 
+    let viewport = ViewportBuilder::default()
+        .origin(Point::origin_point())
+        .at(vector::Vector3D::new(0., 0., 1.))
+        .size(SIZE_X, SIZE_Y)
+        .area(4., 4. * 8. / 16.)
+        .scale(0.)
+        .build();
+
     let render = render::RenderBuilder::default()
-        .viewport(4., 4. * 8. / 16., SIZE_X, SIZE_Y)
+        .viewport(viewport)
         .sample(1)
         .max_depth(10)
         .build();
