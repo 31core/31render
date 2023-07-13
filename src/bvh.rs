@@ -89,7 +89,13 @@ impl BVHNode {
             let mut left_objects = None;
             let mut right_objects = None;
 
-            objects.sort_by(|a, b| if a.x_max() > b.x_max() { Greater } else { Less });
+            objects.sort_by(|a, b| {
+                if (a.x_min() + a.x_max()) / 2. > (b.x_min() + b.x_max()) / 2. {
+                    Greater
+                } else {
+                    Less
+                }
+            });
             for i in 1..objects.len() {
                 let (aa, bb) = get_aabb(&objects[..i]);
                 let mut this_cost = calculate_cost(&aa, &bb, i);
@@ -103,7 +109,13 @@ impl BVHNode {
             }
 
             let mut objects = objects.clone();
-            objects.sort_by(|a, b| if a.y_max() > b.y_max() { Greater } else { Less });
+            objects.sort_by(|a, b| {
+                if (a.y_min() + a.y_max()) / 2. > (b.y_min() + b.y_max()) / 2. {
+                    Greater
+                } else {
+                    Less
+                }
+            });
             for i in 1..objects.len() {
                 let (aa, bb) = get_aabb(&objects[..i]);
                 let mut this_cost = calculate_cost(&aa, &bb, i);
@@ -117,7 +129,13 @@ impl BVHNode {
             }
 
             let mut objects = objects.clone();
-            objects.sort_by(|a, b| if a.z_max() > b.z_max() { Greater } else { Less });
+            objects.sort_by(|a, b| {
+                if (a.z_min() + a.z_max()) / 2. > (b.z_min() + b.z_max()) / 2. {
+                    Greater
+                } else {
+                    Less
+                }
+            });
             for i in 1..objects.len() {
                 let (aa, bb) = get_aabb(&objects[..i]);
                 let mut this_cost = calculate_cost(&aa, &bb, i);
@@ -188,7 +206,7 @@ impl BVHNode {
 
     /**
      * Search the whole tree to find the closest object to hit.
-    */
+     */
     pub fn find_closest_hit(&self, ray: &Ray) -> Option<(f64, Rc<dyn Object>)> {
         if !self.hit(ray) {
             return None;

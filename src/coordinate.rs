@@ -137,7 +137,7 @@ impl Object for Sphere {
             if t > 0. {
                 Some(t)
             }
-            /* if the lighht source is on the sphere */
+            /* if the light source is on the sphere */
             else {
                 let t = t_d + (self.radius.powi(2) - distance.powi(2)).sqrt();
                 Some(t)
@@ -389,11 +389,13 @@ pub struct Viewport {
     pub top: Vector3D,
     pub left: Vector3D,
 
-    x_unit: f64,
-    y_unit: f64,
+    unit: f64,
 }
 
 impl Viewport {
+    /**
+     * at: the direction of eye. (NOTE: this is not a unit vector, the module of `at` is focal distance.)
+     */
     pub fn new(
         width: f64,
         height: f64,
@@ -403,8 +405,15 @@ impl Viewport {
         at: Vector3D,
         scale: f64,
     ) -> Self {
-        let top = height / 2. * Vector3D::new(scale, 1., 0.).unit();
+        let top = {
+            let at_u = at.unit();
+            let top = height / 2.
+                * Vector3D::new(-at_u.x * at_u.y, -at_u.y.powi(2) + 1., -at_u.z * at_u.y).unit();
+            let right = (at * top).unit();
+            top + scale.atan() * top.module() * right.unit()
+        };
         let left = width / 2. * -(at * top).unit();
+
         Self {
             width,
             height,
@@ -414,8 +423,11 @@ impl Viewport {
             at,
             top,
             left,
-            x_unit: width / pixel_x as f64,
-            y_unit: height / pixel_y as f64,
+            unit: if (width / pixel_x as f64) < height / pixel_y as f64 {
+                width / pixel_x as f64
+            } else {
+                height / pixel_y as f64
+            },
         }
     }
     pub fn get_ray_central(&self, x: usize, y: usize) -> Ray {
@@ -448,9 +460,7 @@ impl Viewport {
         let x_vec = x as f64 / (self.pixel_x as f64 / 2.) * self.left;
         let y_vec = y as f64 / (self.pixel_y as f64 / 2.) * self.top;
 
-        let x_vec = self.x_unit * Vector3D::new_random_unit() + x_vec;
-        let y_vec = self.y_unit * Vector3D::new_random_unit() + y_vec;
-        let direction = self.at + x_vec + y_vec;
+        let direction = self.at + x_vec + y_vec + self.unit * Vector3D::new_random_unit();
         Ray::new(self.origin.clone(), direction)
     }
 }
