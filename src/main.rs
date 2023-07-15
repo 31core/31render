@@ -17,7 +17,7 @@ const SIZE_Y: usize = 1080;
 fn get_fuzz(materials: &[Material]) -> f64 {
     for mtl in materials {
         if let Material::Ns(ns) = mtl {
-            return 0.001 * *ns + 1.; // map ns (from 0 to 1000) to fuzz (from 1 to 0)
+            return -0.001 * *ns + 1.; // map ns (from 0 to 1000) to fuzz (from 1 to 0)
         }
     }
     0.
