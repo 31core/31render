@@ -31,22 +31,14 @@ fn main() -> std::io::Result<()> {
         if let Some(face) = element.downcast_ref::<Face>() {
             if face.vertexes.len() == 3 {
                 let fuzz = get_fuzz(&face.materials);
-                objects.push(Rc::new(Triangle::from_obj(
-                    face,
-                    material::Metal {
-                        fuzz,
-                        ..Default::default()
-                    },
-                )));
+                let mut metal = material::Material::new_metal();
+                metal.fuzz = fuzz;
+                objects.push(Rc::new(Triangle::from_obj(face, metal)));
             } else {
                 let fuzz = get_fuzz(&face.materials);
-                objects.push(Rc::new(Polygon::from_obj(
-                    face,
-                    material::Metal {
-                        fuzz,
-                        ..Default::default()
-                    },
-                )));
+                let mut metal = material::Material::new_metal();
+                metal.fuzz = fuzz;
+                objects.push(Rc::new(Polygon::from_obj(face, metal)));
             }
         }
     }

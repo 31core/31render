@@ -2,7 +2,6 @@ use crate::bvh::BoarderDedection;
 use crate::material::*;
 use crate::ray::Ray;
 use crate::vector::Vector3D;
-use std::rc::Rc;
 
 macro_rules! max {
     ($a: expr, $b: expr, $c: expr) => {
@@ -45,39 +44,48 @@ fn plane_hit(ray: &Ray, p: &Point, normal: &Vector3D) -> Option<f64> {
 pub trait Object: crate::bvh::BoarderDedection {
     fn hit(&self, r: &Ray) -> Option<f64>;
     fn normal(&self, p: &Point) -> Vector3D;
-    fn material(&self) -> Rc<dyn Material>;
+    fn material(&self) -> Material;
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct Point {
-    pub vector: Vector3D,
+    pub point_vec: Vector3D,
 }
 
 impl Point {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self {
-            vector: Vector3D::new(x, y, z),
+            point_vec: Vector3D::new(x, y, z),
         }
     }
     pub fn origin_point() -> Self {
         Self {
-            vector: Vector3D::new(0., 0., 0.),
+            point_vec: Vector3D::new(0., 0., 0.),
         }
     }
     pub fn x(&self) -> f64 {
-        self.vector.x
+        self.point_vec.x
     }
     pub fn y(&self) -> f64 {
-        self.vector.y
+        self.point_vec.y
     }
     pub fn z(&self) -> f64 {
-        self.vector.z
+        self.point_vec.z
+    }
+    pub fn set_x(&mut self, value: f64) {
+        self.point_vec.x = value;
+    }
+    pub fn set_y(&mut self, value: f64) {
+        self.point_vec.y = value;
+    }
+    pub fn set_z(&mut self, value: f64) {
+        self.point_vec.z = value;
     }
     pub fn to_vec3d(&self, other: &Self) -> Vector3D {
-        -self.vector + other.vector
+        -self.point_vec + other.point_vec
     }
-    pub fn from_vec3d(vector: Vector3D) -> Self {
-        Self { vector }
+    pub fn from_vec3d(point_vec: Vector3D) -> Self {
+        Self { point_vec }
     }
     pub fn from_obj(v: &obj::vertex::Vertex) -> Self {
         Self::new(v.x, v.y, v.z)
@@ -87,19 +95,16 @@ impl Point {
 pub struct Sphere {
     center: Point,
     radius: f64,
-    material: Rc<dyn Material>,
+    material: Material,
 }
 
 impl Sphere {
     #[allow(dead_code)]
-    pub fn new<M>(center: Point, radius: f64, material: M) -> Self
-    where
-        M: Material + 'static,
-    {
+    pub fn new(center: Point, radius: f64, material: Material) -> Self {
         Self {
             center,
             radius,
-            material: Rc::new(material),
+            material,
         }
     }
 }
@@ -149,8 +154,8 @@ impl Object for Sphere {
     fn normal(&self, p: &Point) -> Vector3D {
         self.center.to_vec3d(p).unit()
     }
-    fn material(&self) -> Rc<dyn Material> {
-        Rc::clone(&self.material)
+    fn material(&self) -> Material {
+        self.material
     }
 }
 
@@ -158,25 +163,19 @@ pub struct Triangle {
     p1: Point,
     p2: Point,
     p3: Point,
-    material: Rc<dyn Material>,
+    material: Material,
 }
 
 impl Triangle {
-    pub fn new<M>(p1: Point, p2: Point, p3: Point, material: M) -> Self
-    where
-        M: Material + 'static,
-    {
+    pub fn new(p1: Point, p2: Point, p3: Point, material: Material) -> Self {
         Self {
             p1,
             p2,
             p3,
-            material: Rc::new(material),
+            material,
         }
     }
-    pub fn from_obj<M>(face: &obj::element::Face, material: M) -> Self
-    where
-        M: Material + 'static,
-    {
+    pub fn from_obj(face: &obj::element::Face, material: Material) -> Self {
         Self::new(
             Point::from_obj(&face.vertexes[0]),
             Point::from_obj(&face.vertexes[1]),
@@ -257,8 +256,8 @@ impl Object for Triangle {
         }
         plane_hit(r, &self.p1, &self.normal(&self.p1))
     }
-    fn material(&self) -> Rc<dyn Material> {
-        Rc::clone(&self.material)
+    fn material(&self) -> Material {
+        self.material
     }
     fn normal(&self, _p: &Point) -> Vector3D {
         self.get_normal()
@@ -267,14 +266,11 @@ impl Object for Triangle {
 
 pub struct Polygon {
     triangles: Vec<Triangle>,
-    material: Rc<dyn Material>,
+    material: Material,
 }
 
 impl Polygon {
-    pub fn new<M>(points: &[Point], material: M) -> Self
-    where
-        M: Material + Copy + 'static,
-    {
+    pub fn new(points: &[Point], material: Material) -> Self {
         let mut triangles = Vec::new();
         let mut p = 1;
         while p + 1 < points.len() {
@@ -288,13 +284,10 @@ impl Polygon {
         }
         Self {
             triangles,
-            material: Rc::new(material),
+            material,
         }
     }
-    pub fn from_obj<M>(face: &obj::element::Face, material: M) -> Self
-    where
-        M: Material + Copy + 'static,
-    {
+    pub fn from_obj(face: &obj::element::Face, material: Material) -> Self {
         let mut points = Vec::new();
         for v in &face.vertexes {
             points.push(Point::from_obj(v));
@@ -369,8 +362,8 @@ impl Object for Polygon {
         }
         None
     }
-    fn material(&self) -> Rc<dyn Material> {
-        Rc::clone(&self.material)
+    fn material(&self) -> Material {
+        self.material
     }
     fn normal(&self, _p: &Point) -> Vector3D {
         self.triangles[0].get_normal()

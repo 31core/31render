@@ -26,7 +26,7 @@ fn get_v_index(param: &str) -> usize {
     param
         .split('/')
         .collect::<Vec<&str>>()
-        .get(0)
+        .first()
         .unwrap()
         .parse::<usize>()
         .unwrap()
@@ -82,7 +82,7 @@ pub fn parse_obj(obj_content: &str) -> Vec<Box<dyn Any>> {
         }
         if tokens[t] == "mtllib" {
             t += find_next_token(&tokens[t..]);
-            mtllib = mtl::parser::parse_mtl(&std::fs::read_to_string(&tokens[t]).unwrap());
+            mtllib = mtl::parser::parse_mtl(&std::fs::read_to_string(tokens[t]).unwrap());
         }
         if tokens[t] == "usemtl" {
             t += find_next_token(&tokens[t..]);

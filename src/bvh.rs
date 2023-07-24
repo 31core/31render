@@ -8,22 +8,22 @@ fn get_aabb(objects: &[Rc<dyn Object>]) -> (Point, Point) {
     let mut bb = Point::new(objects[0].x_max(), objects[0].y_max(), objects[0].z_max());
     for o in &objects[1..] {
         if o.x_min() < aa.x() {
-            aa.vector.x = o.x_min();
+            aa.set_x(o.x_min());
         }
         if o.y_min() < aa.y() {
-            aa.vector.y = o.y_min();
+            aa.set_y(o.y_min());
         }
         if o.z_min() < aa.z() {
-            aa.vector.z = o.z_min();
+            aa.set_z(o.z_min());
         }
         if o.x_max() > bb.x() {
-            bb.vector.x = o.x_max();
+            bb.set_x(o.x_max());
         }
         if o.y_max() > bb.y() {
-            bb.vector.y = o.y_max();
+            bb.set_y(o.y_max());
         }
         if o.z_max() > bb.z() {
-            bb.vector.z = o.z_max();
+            bb.set_z(o.z_max());
         }
     }
     (aa, bb)

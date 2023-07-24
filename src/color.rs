@@ -10,7 +10,7 @@ impl Color {
             color_vec: Vector3D::new(1., 1., 1.),
         }
     }
-    pub fn attenuate(&mut self, attenuation: (f64, f64, f64)) {
+    pub fn apply_attenuate(&mut self, attenuation: (f64, f64, f64)) {
         self.color_vec.x *= attenuation.0;
         self.color_vec.y *= attenuation.1;
         self.color_vec.z *= attenuation.2;

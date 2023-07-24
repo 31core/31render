@@ -24,18 +24,17 @@ impl Ray {
             if let Some((t, object)) = bvh.find_closest_hit(self) {
                 let normal = object.normal(&self.point_at(t));
 
-                match object.material().reflect(self, t, &normal) {
-                    Some(ref_ray) => {
-                        let mut color = ref_ray.trace(bvh, depth - 1);
-                        color.attenuate(object.material().attenuation());
-                        return color;
-                    }
-                    /* light source */
-                    None => {
-                        let mut color = Color::new();
-                        color.color_vec = Vector3D::from(object.material().attenuation());
-                        return color;
-                    }
+                if object.material().is_light {
+                    let emit = object.material().emit;
+
+                    let mut color = Color::new();
+                    color.color_vec = Vector3D::from((emit, emit, emit));
+                    return color;
+                } else {
+                    let ref_ray = object.material().scatter(self, t, &normal);
+                    let mut color = ref_ray.trace(bvh, depth - 1);
+                    color.apply_attenuate(object.material().attenuation);
+                    return color;
                 }
             }
         }
@@ -68,6 +67,6 @@ impl Ray {
         }
     }
     pub fn point_at(&self, t: f64) -> Point {
-        Point::from_vec3d(self.origin.vector + t * self.direction)
+        Point::from_vec3d(self.origin.point_vec + t * self.direction)
     }
 }

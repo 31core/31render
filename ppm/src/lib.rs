@@ -47,7 +47,7 @@ impl Image {
                     f.write_all(format!("{} {} {}\n", pixel.r, pixel.g, pixel.b).as_bytes())?;
                 }
                 PPMType::P6 => {
-                    f.write_all(&[pixel.r as u8, pixel.g as u8, pixel.b as u8])?;
+                    f.write_all(&[pixel.r, pixel.g, pixel.b])?;
                 }
             }
         }
@@ -56,7 +56,7 @@ impl Image {
     pub fn load(&mut self, path: &str) -> IOResult<()> {
         let data = std::fs::read(path)?;
 
-        let datas = data.split(|b| *b == '\n' as u8).collect::<Vec<&[u8]>>();
+        let datas = data.split(|b| *b == b'\n').collect::<Vec<&[u8]>>();
         let ppm_type = String::from_utf8(datas[0].to_vec()).unwrap();
         if ppm_type == "P3" {
             let mut pixel = 0;
@@ -77,7 +77,7 @@ impl Image {
             let mut ppm_data: Vec<u8> = Vec::new();
             for i in &datas[3..] {
                 ppm_data.extend(*i);
-                ppm_data.push('\n' as u8);
+                ppm_data.push(b'\n');
             }
             ppm_data.pop();
 
