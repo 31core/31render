@@ -1,15 +1,19 @@
 mod bvh;
 mod color;
-mod coordinate;
 mod material;
+mod objects;
+mod point;
 mod ray;
 mod render;
 mod vector;
+mod viewport;
 
-use coordinate::*;
 use mtl::material::Material;
 use obj::element::*;
+use objects::*;
+use point::Point;
 use std::rc::Rc;
+use viewport::ViewportBuilder;
 
 const SIZE_X: usize = 1920;
 const SIZE_Y: usize = 1080;

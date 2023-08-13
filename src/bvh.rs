@@ -1,4 +1,5 @@
-use crate::coordinate::*;
+use crate::objects::*;
+use crate::point::Point;
 use crate::ray::Ray;
 use std::cmp::Ordering::*;
 use std::rc::Rc;

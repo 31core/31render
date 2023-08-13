@@ -1,6 +1,6 @@
 use crate::bvh::BVHNode;
 use crate::color::Color;
-use crate::coordinate::*;
+use crate::point::Point;
 use crate::vector::*;
 
 #[derive(Clone)]
