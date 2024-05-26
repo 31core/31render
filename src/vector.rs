@@ -12,13 +12,6 @@ impl Vector3D {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
-    pub fn from(vec: (f64, f64, f64)) -> Self {
-        Self {
-            x: vec.0,
-            y: vec.1,
-            z: vec.2,
-        }
-    }
     /**
      * Generate a random unit vector
      */
@@ -48,6 +41,22 @@ impl Vector3D {
      */
     pub fn unit(&self) -> Self {
         *self / self.module()
+    }
+}
+
+impl From<(f64, f64, f64)> for Vector3D {
+    fn from(vec: (f64, f64, f64)) -> Vector3D {
+        Vector3D {
+            x: vec.0,
+            y: vec.1,
+            z: vec.2,
+        }
+    }
+}
+
+impl From<Vector3D> for (f64, f64, f64) {
+    fn from(vec: Vector3D) -> (f64, f64, f64) {
+        (vec.x, vec.y, vec.z)
     }
 }
 

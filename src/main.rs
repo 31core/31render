@@ -5,18 +5,34 @@ mod objects;
 mod point;
 mod ray;
 mod render;
+mod script;
 mod vector;
 mod viewport;
 
+use clap::Parser;
 use mtl::material::Material;
 use obj::element::*;
 use objects::*;
-use point::Point;
+use script::*;
+use std::io::Result as IOResult;
 use std::rc::Rc;
 use viewport::ViewportBuilder;
 
-const SIZE_X: usize = 1920;
-const SIZE_Y: usize = 1080;
+#[derive(Parser)]
+struct Args {
+    /// Script path
+    #[arg(short = 'S')]
+    script: String,
+    /// Output path
+    #[arg(short)]
+    output: String,
+    /// Samping
+    #[arg(short, default_value_t = 100)]
+    sampling: usize,
+    /// Max depth
+    #[arg(short = 'd', default_value_t = 10)]
+    max_depth: usize,
+}
 
 fn get_fuzz(materials: &[Material]) -> f64 {
     for mtl in materials {
@@ -27,42 +43,68 @@ fn get_fuzz(materials: &[Material]) -> f64 {
     0.
 }
 
-fn main() -> std::io::Result<()> {
-    let elements = obj::parser::parse_obj(&std::fs::read_to_string("untitled.obj")?);
-    let mut objects: Vec<Rc<dyn Object>> = Vec::new();
+fn get_attenuation(materials: &[Material]) -> (f64, f64, f64) {
+    for mtl in materials {
+        if let Material::Kd(r, g, b) = mtl {
+            return (*r, *g, *b);
+        }
+    }
+
+    (1., 1., 1.)
+}
+
+fn load_obj(objects: &mut Vec<Rc<dyn Object>>, obj_file: &str) -> IOResult<()> {
+    let elements = obj::parser::parse_obj(&std::fs::read_to_string(obj_file)?);
 
     for element in &elements {
         if let Some(face) = element.downcast_ref::<Face>() {
             if face.vertexes.len() == 3 {
-                let fuzz = get_fuzz(&face.materials);
                 let mut metal = material::Material::new_metal();
-                metal.fuzz = fuzz;
+                metal.fuzz = get_fuzz(&face.materials);
+                metal.attenuation = get_attenuation(&face.materials);
+
                 objects.push(Rc::new(Triangle::from_obj(face, metal)));
             } else {
-                let fuzz = get_fuzz(&face.materials);
                 let mut metal = material::Material::new_metal();
-                metal.fuzz = fuzz;
+                metal.fuzz = get_fuzz(&face.materials);
+                metal.attenuation = get_attenuation(&face.materials);
+
                 objects.push(Rc::new(Polygon::from_obj(face, metal)));
             }
         }
     }
 
-    let bvh = bvh::BVHNode::build(&objects, 10);
+    Ok(())
+}
+
+fn main() -> std::io::Result<()> {
+    let args = Args::parse();
+    let script = script::Script::parse(&std::fs::read_to_string(args.script)?);
+
+    let mut objects: Vec<Rc<dyn Object>> = Vec::new();
+
+    for ins in &script.instructions {
+        if let Instruction::LoadObj(obj_file) = ins {
+            load_obj(&mut objects, obj_file)?;
+        }
+    }
+
+    let bvh = bvh::BVHNode::build(&objects, 20);
 
     let viewport = ViewportBuilder::default()
-        .origin(Point::origin_point())
-        .at(vector::Vector3D::new(0., 0., 1.))
-        .size(SIZE_X, SIZE_Y)
+        .origin(script.get_camera())
+        .at(script.get_camera_at())
+        .size(script.get_size())
         .area(4., 4. * 8. / 16.)
-        .scale(0.)
+        .scale(script.get_camera_scale())
         .build();
 
     let render = render::RenderBuilder::default()
         .viewport(viewport)
-        .sample(1)
-        .max_depth(10)
+        .sample(args.sampling)
+        .max_depth(args.max_depth)
         .build();
 
-    render.render(&bvh).save("out.ppm", ppm::PPMType::P6)?;
+    render.render(&bvh).save(&args.output, ppm::PPMType::P6)?;
     Ok(())
 }

@@ -12,3 +12,4 @@ ppm = { path = "ppm" }
 obj = { path = "obj" }
 mtl = { path = "mtl" }
 rand = "0.8.5"
+clap = { version = "4.5.4", features = ["derive"] }

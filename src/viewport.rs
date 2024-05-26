@@ -35,7 +35,7 @@ impl Viewport {
             let top = height / 2.
                 * Vector3D::new(-at_u.x * at_u.y, -at_u.y.powi(2) + 1., -at_u.z * at_u.y).unit();
             let right = (at * top).unit();
-            top + scale.atan() * top.module() * right.unit()
+            top + scale.tan() * top.module() * right.unit()
         };
         let left = width / 2. * -(at * top).unit();
 
@@ -127,9 +127,9 @@ impl ViewportBuilder {
         self.height = height;
         self
     }
-    pub fn size(mut self, pixel_x: usize, pixel_y: usize) -> Self {
-        self.pixel_x = pixel_x;
-        self.pixel_y = pixel_y;
+    pub fn size(mut self, size: (usize, usize)) -> Self {
+        self.pixel_x = size.0;
+        self.pixel_y = size.1;
         self
     }
     pub fn scale(mut self, scale: f64) -> Self {

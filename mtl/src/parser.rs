@@ -17,23 +17,37 @@ pub fn parse_mtl(mtl_content: &str) -> HashMap<String, Vec<Material>> {
 
     let mut t = 0;
     while t < tokens.len() {
-        if tokens[t] == "Ns" {
-            t += find_next_token(&tokens[t..]);
-            let value = tokens[t].parse().unwrap();
-            let ns = Material::Ns(value);
-            materials.get_mut(&current_mtl).unwrap().push(ns);
-            t += 1;
-        }
-        if tokens[t] == "Ni" {
-            t += find_next_token(&tokens[t..]);
-            let value = tokens[t].parse().unwrap();
-            let ns = Material::Ni(value);
-            materials.get_mut(&current_mtl).unwrap().push(ns);
-        }
-        if tokens[t] == "newmtl" {
-            t += find_next_token(&tokens[t..]);
-            current_mtl = tokens[t].parse().unwrap();
-            materials.insert(current_mtl.clone(), Vec::new());
+        match tokens[t] {
+            "Ns" => {
+                t += find_next_token(&tokens[t..]);
+                let value = tokens[t].parse().unwrap();
+                let ns = Material::Ns(value);
+                materials.get_mut(&current_mtl).unwrap().push(ns);
+            }
+            "Ni" => {
+                t += find_next_token(&tokens[t..]);
+                let value = tokens[t].parse().unwrap();
+                let ns = Material::Ni(value);
+                materials.get_mut(&current_mtl).unwrap().push(ns);
+            }
+            "Kd" => {
+                t += find_next_token(&tokens[t..]);
+                let r = tokens[t].parse().unwrap();
+
+                t += find_next_token(&tokens[t..]);
+                let g = tokens[t].parse().unwrap();
+
+                t += find_next_token(&tokens[t..]);
+                let b = tokens[t].parse().unwrap();
+                let ns = Material::Kd(r, g, b);
+                materials.get_mut(&current_mtl).unwrap().push(ns);
+            }
+            "newmtl" => {
+                t += find_next_token(&tokens[t..]);
+                current_mtl = tokens[t].parse().unwrap();
+                materials.insert(current_mtl.clone(), Vec::new());
+            }
+            _ => {}
         }
         t += find_next_token(&tokens[t..]);
     }

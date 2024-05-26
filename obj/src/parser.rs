@@ -13,7 +13,7 @@ fn find_next_token(tokens: &[&str]) -> usize {
 }
 
 fn is_keyword(param: &str) -> bool {
-    let types = ["v", "f", "o"];
+    let types = ["v", "f", "o", "usemtl"];
     for i in types {
         if param == i {
             return true;
@@ -42,51 +42,54 @@ pub fn parse_obj(obj_content: &str) -> Vec<Box<dyn Any>> {
 
     let mut t = 0;
     while t < tokens.len() {
-        if tokens[t] == "v" {
-            let mut last_vertex = 0;
-            let mut v = Vertex::default();
-            loop {
-                t += find_next_token(&tokens[t..]);
-                if !tokens[t].is_empty() {
-                    match last_vertex {
-                        0 => v.x = tokens[t].parse::<f64>().unwrap(),
-                        1 => v.y = tokens[t].parse::<f64>().unwrap(),
-                        2 => v.z = tokens[t].parse::<f64>().unwrap(),
-                        _ => {}
+        match tokens[t] {
+            "v" => {
+                let mut last_vertex = 0;
+                let mut v = Vertex::default();
+                loop {
+                    t += find_next_token(&tokens[t..]);
+                    if !tokens[t].is_empty() {
+                        match last_vertex {
+                            0 => v.x = tokens[t].parse::<f64>().unwrap(),
+                            1 => v.y = tokens[t].parse::<f64>().unwrap(),
+                            2 => v.z = tokens[t].parse::<f64>().unwrap(),
+                            _ => {}
+                        }
+                        last_vertex += 1;
+                        if last_vertex == 3 {
+                            break;
+                        }
                     }
-                    last_vertex += 1;
-                    if last_vertex == 3 {
+                }
+                vertexes.push(v);
+            }
+            "f" => {
+                let mut f = Face::default();
+                if !usemtl.is_empty() {
+                    f.materials = mtllib.get(&usemtl).unwrap().clone();
+                }
+                loop {
+                    t += find_next_token(&tokens[t..]);
+                    if t == tokens.len() || is_keyword(tokens[t]) {
+                        t -= 1;
                         break;
                     }
+                    if !tokens[t].is_empty() {
+                        f.vertexes
+                            .push(vertexes[get_v_index(tokens[t]) - 1].clone());
+                    }
                 }
+                objects.push(Box::new(f));
             }
-            vertexes.push(v);
-        }
-        if tokens[t] == "f" {
-            let mut f = Face::default();
-            if !usemtl.is_empty() {
-                f.materials = mtllib.get(&usemtl).unwrap().clone();
-            }
-            loop {
+            "mtllib" => {
                 t += find_next_token(&tokens[t..]);
-                if t == tokens.len() || is_keyword(tokens[t]) {
-                    t -= 1;
-                    break;
-                }
-                if !tokens[t].is_empty() {
-                    f.vertexes
-                        .push(vertexes[get_v_index(tokens[t]) - 1].clone());
-                }
+                mtllib = mtl::parser::parse_mtl(&std::fs::read_to_string(tokens[t]).unwrap());
             }
-            objects.push(Box::new(f));
-        }
-        if tokens[t] == "mtllib" {
-            t += find_next_token(&tokens[t..]);
-            mtllib = mtl::parser::parse_mtl(&std::fs::read_to_string(tokens[t]).unwrap());
-        }
-        if tokens[t] == "usemtl" {
-            t += find_next_token(&tokens[t..]);
-            usemtl = tokens[t].to_owned();
+            "usemtl" => {
+                t += find_next_token(&tokens[t..]);
+                usemtl = tokens[t].to_owned();
+            }
+            _ => {}
         }
         t += find_next_token(&tokens[t..]);
     }

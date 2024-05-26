@@ -27,10 +27,10 @@ impl Material {
             ..Default::default()
         }
     }
-    #[allow(dead_code)]
     pub fn new_light(emit: f64) -> Self {
         Self {
             emit,
+            is_light: true,
             ..Default::default()
         }
     }
