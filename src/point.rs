@@ -1,6 +1,6 @@
 use crate::vector::Vector3D;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Point {
     pub point_vec: Vector3D,
 }
@@ -34,7 +34,7 @@ impl Point {
     pub fn set_z(&mut self, value: f64) {
         self.point_vec.z = value;
     }
-    pub fn to_vec3d(&self, other: &Self) -> Vector3D {
+    pub fn to_vec3d(self, other: &Self) -> Vector3D {
         -self.point_vec + other.point_vec
     }
     pub fn from_vec3d(point_vec: Vector3D) -> Self {

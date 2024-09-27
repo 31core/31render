@@ -4,8 +4,6 @@ use crate::vector::Vector3D;
 
 #[derive(Default)]
 pub struct Viewport {
-    pub width: f64,
-    pub height: f64,
     pub pixel_x: usize,
     pub pixel_y: usize,
 
@@ -40,8 +38,6 @@ impl Viewport {
         let left = width / 2. * -(at * top).unit();
 
         Self {
-            width,
-            height,
             pixel_x,
             pixel_y,
             origin,
@@ -69,7 +65,7 @@ impl Viewport {
         let x_vec = x as f64 / (self.pixel_x as f64 / 2.) * self.left;
         let y_vec = y as f64 / (self.pixel_y as f64 / 2.) * self.top;
         let direction = self.at + x_vec + y_vec;
-        Ray::new(self.origin.clone(), direction)
+        Ray::new(self.origin, direction)
     }
     pub fn get_ray_random(&self, x: usize, y: usize) -> Ray {
         let x = if x > self.pixel_x {
@@ -86,7 +82,7 @@ impl Viewport {
         let y_vec = y as f64 / (self.pixel_y as f64 / 2.) * self.top;
 
         let direction = self.at + x_vec + y_vec + self.unit * Vector3D::new_random_unit();
-        Ray::new(self.origin.clone(), direction)
+        Ray::new(self.origin, direction)
     }
 }
 

@@ -4,30 +4,6 @@ use crate::point::Point;
 use crate::ray::Ray;
 use crate::vector::Vector3D;
 
-macro_rules! max {
-    ($a: expr, $b: expr, $c: expr) => {
-        if $a > $b && $a > $c {
-            $a
-        } else if $b > $c {
-            $b
-        } else {
-            $c
-        }
-    };
-}
-
-macro_rules! min {
-    ($a: expr, $b: expr, $c: expr) => {
-        if $a < $b && $a < $c {
-            $a
-        } else if $b < $c {
-            $b
-        } else {
-            $c
-        }
-    };
-}
-
 /**
  * Check if a ray hit a plane
 */
@@ -120,6 +96,7 @@ pub struct Triangle {
     p2: Point,
     p3: Point,
     material: Material,
+    normal_vec_cache: Vector3D,
 }
 
 impl Triangle {
@@ -129,6 +106,7 @@ impl Triangle {
             p2,
             p3,
             material,
+            normal_vec_cache: (p1.to_vec3d(&p2) * p1.to_vec3d(&p3)).unit(),
         }
     }
     pub fn from_obj(face: &obj::element::Face, material: Material) -> Self {
@@ -140,28 +118,28 @@ impl Triangle {
         )
     }
     fn get_normal(&self) -> Vector3D {
-        (self.p1.to_vec3d(&self.p2) * self.p1.to_vec3d(&self.p3)).unit()
+        self.normal_vec_cache
     }
 }
 
 impl BoarderDedection for Triangle {
     fn x_max(&self) -> f64 {
-        max!(self.p1.x(), self.p2.x(), self.p3.x())
+        self.p1.x().max(self.p2.x().max(self.p3.x()))
     }
     fn x_min(&self) -> f64 {
-        min!(self.p1.x(), self.p2.x(), self.p3.x())
+        self.p1.x().min(self.p2.x().min(self.p3.x()))
     }
     fn y_max(&self) -> f64 {
-        max!(self.p1.y(), self.p2.y(), self.p3.y())
+        self.p1.y().max(self.p2.y().max(self.p3.y()))
     }
     fn y_min(&self) -> f64 {
-        min!(self.p1.y(), self.p2.y(), self.p3.y())
+        self.p1.y().min(self.p2.y().min(self.p3.y()))
     }
     fn z_max(&self) -> f64 {
-        max!(self.p1.z(), self.p2.z(), self.p3.z())
+        self.p1.z().max(self.p2.z().max(self.p3.z()))
     }
     fn z_min(&self) -> f64 {
-        min!(self.p1.z(), self.p2.z(), self.p3.z())
+        self.p1.z().min(self.p2.z().min(self.p3.z()))
     }
 }
 
@@ -231,9 +209,9 @@ impl Polygon {
         let mut p = 1;
         while p + 1 < points.len() {
             triangles.push(Triangle::new(
-                points[0].clone(),
-                points[p].clone(),
-                points[p + 1].clone(),
+                points[0],
+                points[p],
+                points[p + 1],
                 material,
             ));
             p += 1;

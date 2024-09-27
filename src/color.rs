@@ -15,6 +15,11 @@ impl Color {
         self.color_vec.y *= attenuation.1;
         self.color_vec.z *= attenuation.2;
     }
+    pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
+        Self {
+            color_vec: Vector3D::new(r as f64 / 255., g as f64 / 255., b as f64 / 255.),
+        }
+    }
     pub fn to_rgb(&self) -> ppm::Pixel {
         ppm::Pixel::new(
             (255. * self.color_vec.x) as u8,
