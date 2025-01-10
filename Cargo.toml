@@ -8,8 +8,8 @@ name = "31render"
 path = "src/main.rs"
 
 [dependencies]
-ppm = { path = "ppm" }
-obj = { path = "obj" }
+clap = { version = "4.5.26", features = ["derive"] }
 mtl = { path = "mtl" }
+obj = { path = "obj" }
+ppm = { path = "ppm" }
 rand = "0.8.5"
-clap = { version = "4.5.4", features = ["derive"] }

@@ -1,7 +1,7 @@
 use crate::bvh::BVHNode;
 use crate::color::Color;
 use crate::point::Point;
-use crate::vector::*;
+use crate::vector::Vector3D;
 
 #[derive(Clone)]
 pub struct Ray {

@@ -1,5 +1,5 @@
 use crate::bvh::BoarderDedection;
-use crate::material::*;
+use crate::material::Material;
 use crate::point::Point;
 use crate::ray::Ray;
 use crate::vector::Vector3D;
@@ -208,12 +208,7 @@ impl Polygon {
         let mut triangles = Vec::new();
         let mut p = 1;
         while p + 1 < points.len() {
-            triangles.push(Triangle::new(
-                points[0],
-                points[p],
-                points[p + 1],
-                material,
-            ));
+            triangles.push(Triangle::new(points[0], points[p], points[p + 1], material));
             p += 1;
         }
         Self {

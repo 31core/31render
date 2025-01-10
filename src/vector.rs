@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::ops::*;
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vector3D {
@@ -31,7 +31,7 @@ impl Vector3D {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
     /**
-     * Calculate the module lenth
+     * Calculate the module length
      */
     pub fn module(&self) -> f64 {
         (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()

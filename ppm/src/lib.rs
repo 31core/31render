@@ -1,5 +1,4 @@
-use std::io::Result as IOResult;
-use std::io::Write;
+use std::io::{Result as IOResult, Write};
 
 pub enum PPMType {
     P3,
@@ -65,7 +64,7 @@ impl Image {
                     continue;
                 }
                 let rgb_str = String::from_utf8(i.to_vec()).unwrap();
-                let rgb = rgb_str.split(|c| c == ' ').collect::<Vec<&str>>();
+                let rgb = rgb_str.split(' ').collect::<Vec<&str>>();
                 let r = rgb[0].parse::<u8>().unwrap();
                 let g = rgb[1].parse::<u8>().unwrap();
                 let b = rgb[2].parse::<u8>().unwrap();

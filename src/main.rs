@@ -10,12 +10,12 @@ mod vector;
 mod viewport;
 
 use clap::Parser;
-use mtl::material::Material;
-use obj::element::*;
-use objects::*;
-use script::*;
-use std::io::Result as IOResult;
-use std::rc::Rc;
+use mtl::{material::Material, parser::parse_mtl};
+use obj::element::Face;
+use objects::{Object, Polygon, Triangle};
+use point::Point;
+use script::Instruction;
+use std::{collections::HashMap, io::Result as IOResult, rc::Rc};
 use viewport::ViewportBuilder;
 
 #[derive(Parser)]
@@ -34,6 +34,7 @@ struct Args {
     max_depth: usize,
 }
 
+/** get fuzz from `Ns` value in `.mtl` file */
 fn get_fuzz(materials: &[Material]) -> f64 {
     for mtl in materials {
         if let Material::Ns(ns) = mtl {
@@ -43,6 +44,7 @@ fn get_fuzz(materials: &[Material]) -> f64 {
     0.
 }
 
+/** get attenuation from `Kd` value in `.mtl` file */
 fn get_attenuation(materials: &[Material]) -> (f64, f64, f64) {
     for mtl in materials {
         if let Material::Kd(r, g, b) = mtl {
@@ -51,6 +53,28 @@ fn get_attenuation(materials: &[Material]) -> (f64, f64, f64) {
     }
 
     (1., 1., 1.)
+}
+
+/** get reflect rate from `d` value in `.mtl` file */
+fn get_reflect(materials: &[Material]) -> f64 {
+    for mtl in materials {
+        if let Material::D(d) = mtl {
+            return *d;
+        }
+    }
+
+    1.
+}
+
+/** get refract index from `Ni` value in `.mtl` file */
+fn get_refract(materials: &[Material]) -> f64 {
+    for mtl in materials {
+        if let Material::Ni(ni) = mtl {
+            return *ni;
+        }
+    }
+
+    1.
 }
 
 fn load_obj(objects: &mut Vec<Rc<dyn Object>>, obj_file: &str) -> IOResult<()> {
@@ -62,12 +86,16 @@ fn load_obj(objects: &mut Vec<Rc<dyn Object>>, obj_file: &str) -> IOResult<()> {
                 let mut metal = material::Material::new_metal();
                 metal.fuzz = get_fuzz(&face.materials);
                 metal.attenuation = get_attenuation(&face.materials);
+                metal.refract_index = get_refract(&face.materials);
+                metal.reflect_rate = get_reflect(&face.materials);
 
                 objects.push(Rc::new(Triangle::from_obj(face, metal)));
             } else {
                 let mut metal = material::Material::new_metal();
                 metal.fuzz = get_fuzz(&face.materials);
                 metal.attenuation = get_attenuation(&face.materials);
+                metal.refract_index = get_refract(&face.materials);
+                metal.reflect_rate = get_reflect(&face.materials);
 
                 objects.push(Rc::new(Polygon::from_obj(face, metal)));
             }
@@ -77,15 +105,42 @@ fn load_obj(objects: &mut Vec<Rc<dyn Object>>, obj_file: &str) -> IOResult<()> {
     Ok(())
 }
 
-fn main() -> std::io::Result<()> {
+fn main() -> IOResult<()> {
     let args = Args::parse();
     let script = script::Script::parse(&std::fs::read_to_string(args.script)?);
 
     let mut objects: Vec<Rc<dyn Object>> = Vec::new();
 
+    let mut mtls = HashMap::new();
+
     for ins in &script.instructions {
         if let Instruction::LoadObj(obj_file) = ins {
             load_obj(&mut objects, obj_file)?;
+        }
+        if let Instruction::LoadMtl(mtl_file) = ins {
+            for (name, ctx) in parse_mtl(&std::fs::read_to_string(mtl_file)?).iter() {
+                mtls.insert(name.to_owned(), ctx.clone());
+            }
+        }
+        if let Instruction::AddSphere {
+            x,
+            y,
+            z,
+            raius,
+            material,
+        } = ins
+        {
+            let mut metal = material::Material::new_metal();
+            let mtl = mtls.get(material).unwrap();
+            metal.fuzz = get_fuzz(mtl);
+            metal.attenuation = get_attenuation(mtl);
+            metal.refract_index = get_refract(mtl);
+            metal.reflect_rate = get_reflect(mtl);
+            objects.push(Rc::new(objects::Sphere::new(
+                Point::new(*x, *y, *z),
+                *raius,
+                metal,
+            )));
         }
     }
 

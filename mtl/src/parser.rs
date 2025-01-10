@@ -42,6 +42,13 @@ pub fn parse_mtl(mtl_content: &str) -> HashMap<String, Vec<Material>> {
                 let ns = Material::Kd(r, g, b);
                 materials.get_mut(&current_mtl).unwrap().push(ns);
             }
+            "d" => {
+                t += find_next_token(&tokens[t..]);
+                let d = tokens[t].parse().unwrap();
+
+                let ns = Material::D(d);
+                materials.get_mut(&current_mtl).unwrap().push(ns);
+            }
             "newmtl" => {
                 t += find_next_token(&tokens[t..]);
                 current_mtl = tokens[t].parse().unwrap();

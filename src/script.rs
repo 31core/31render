@@ -6,11 +6,30 @@ const DEFAULT_HEIGHT: usize = 1080;
 
 #[derive(Debug)]
 pub enum Instruction {
-    Camera { x: f64, y: f64, z: f64 },
-    CameraAt { x: f64, y: f64, z: f64 },
+    Camera {
+        x: f64,
+        y: f64,
+        z: f64,
+    },
+    CameraAt {
+        x: f64,
+        y: f64,
+        z: f64,
+    },
     CameraScale(f64),
-    Size { width: usize, height: usize },
+    Size {
+        width: usize,
+        height: usize,
+    },
     LoadObj(String),
+    LoadMtl(String),
+    AddSphere {
+        x: f64,
+        y: f64,
+        z: f64,
+        raius: f64,
+        material: String,
+    },
 }
 
 #[derive(Default, Debug)]
@@ -45,6 +64,16 @@ impl Script {
                 "load-obj" => script
                     .instructions
                     .push(Instruction::LoadObj(line[1].to_owned())),
+                "load-mtl" => script
+                    .instructions
+                    .push(Instruction::LoadMtl(line[1].to_owned())),
+                "add-sphere" => script.instructions.push(Instruction::AddSphere {
+                    x: line[1].parse().unwrap(),
+                    y: line[2].parse().unwrap(),
+                    z: line[3].parse().unwrap(),
+                    raius: line[4].parse().unwrap(),
+                    material: line[5].to_owned(),
+                }),
                 _ => {}
             }
         }

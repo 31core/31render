@@ -1,7 +1,7 @@
-use crate::objects::*;
+use crate::objects::Object;
 use crate::point::Point;
 use crate::ray::Ray;
-use std::cmp::Ordering::*;
+use std::cmp::Ordering::{Greater, Less};
 use std::rc::Rc;
 
 fn get_aabb(objects: &[Rc<dyn Object>]) -> (Point, Point) {
