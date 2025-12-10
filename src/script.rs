@@ -1,5 +1,4 @@
-use crate::point::Point;
-use crate::vector::Vector3D;
+use crate::{point::Point, vector::Vector3D};
 
 const DEFAULT_WIDTH: usize = 1920;
 const DEFAULT_HEIGHT: usize = 1080;

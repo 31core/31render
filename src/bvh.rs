@@ -1,8 +1,8 @@
-use crate::objects::Object;
-use crate::point::Point;
-use crate::ray::Ray;
-use std::cmp::Ordering::{Greater, Less};
-use std::rc::Rc;
+use crate::{objects::Object, point::Point, ray::Ray};
+use std::{
+    cmp::Ordering::{Greater, Less},
+    rc::Rc,
+};
 
 fn get_aabb(objects: &[Rc<dyn Object>]) -> (Point, Point) {
     let mut aa = Point::new(objects[0].x_min(), objects[0].y_min(), objects[0].z_min());
@@ -34,11 +34,11 @@ fn find_closest_hit(ray: &Ray, objects: &[Rc<dyn Object>]) -> Option<(f64, Rc<dy
     let mut closest = 0.;
     let mut closest_object = None;
     for object in objects {
-        if let Some(t) = object.hit(ray) {
-            if closest == 0. || t < closest {
-                closest = t;
-                closest_object = Some((t, Rc::clone(object)));
-            }
+        if let Some(t) = object.hit(ray)
+            && (closest == 0. || t < closest)
+        {
+            closest = t;
+            closest_object = Some((t, Rc::clone(object)));
         }
     }
     closest_object
@@ -59,16 +59,6 @@ pub struct BVHNode {
     pub max: Point,
     pub min: Point,
     pub objects: Vec<Rc<dyn Object>>,
-}
-
-macro_rules! order2 {
-    ($a: expr, $b: expr) => {
-        if $a > $b {
-            ($a, $b)
-        } else {
-            ($b, $a)
-        }
-    };
 }
 
 impl BVHNode {
@@ -161,24 +151,6 @@ impl BVHNode {
      * Check if a ray hits this AABB Box.
      */
     pub fn hit(&self, ray: &Ray) -> bool {
-        fn max3(a: f64, b: f64, c: f64) -> f64 {
-            if a > b && a > c {
-                a
-            } else if b > c {
-                b
-            } else {
-                c
-            }
-        }
-        fn min3(a: f64, b: f64, c: f64) -> f64 {
-            if a < b && a < c && a > 0. {
-                a
-            } else if b < c && b > 0. {
-                b
-            } else {
-                c
-            }
-        }
         if ray.origin.x() > self.min.x()
             && ray.origin.x() < self.max.x()
             && ray.origin.y() > self.min.y()
@@ -188,20 +160,22 @@ impl BVHNode {
         {
             return true;
         }
-        let (x_far, x_near) = order2!(
-            (self.max.x() - ray.origin.x()) / ray.direction.x,
-            (self.min.x() - ray.origin.x()) / ray.direction.x
-        );
-        let (y_far, y_near) = order2!(
-            (self.max.y() - ray.origin.y()) / ray.direction.y,
-            (self.min.y() - ray.origin.y()) / ray.direction.y
-        );
-        let (z_far, z_near) = order2!(
-            (self.max.z() - ray.origin.z()) / ray.direction.z,
-            (self.min.z() - ray.origin.z()) / ray.direction.z
-        );
-        let t_max = max3(x_near, y_near, z_near);
-        let t_min = min3(x_far, y_far, z_far);
+
+        let x_far = ((self.max.x() - ray.origin.x()) / ray.direction.x)
+            .max((self.min.x() - ray.origin.x()) / ray.direction.x);
+        let x_near = ((self.max.x() - ray.origin.x()) / ray.direction.x)
+            .min((self.min.x() - ray.origin.x()) / ray.direction.x);
+        let y_far = ((self.max.y() - ray.origin.y()) / ray.direction.y)
+            .max((self.min.y() - ray.origin.y()) / ray.direction.y);
+        let y_near = ((self.max.y() - ray.origin.y()) / ray.direction.y)
+            .min((self.min.y() - ray.origin.y()) / ray.direction.y);
+        let z_far = ((self.max.z() - ray.origin.z()) / ray.direction.z)
+            .max((self.min.z() - ray.origin.z()) / ray.direction.z);
+        let z_near = ((self.max.z() - ray.origin.z()) / ray.direction.z)
+            .min((self.min.z() - ray.origin.z()) / ray.direction.z);
+
+        let t_max = x_near.max(y_near).max(z_near);
+        let t_min = x_far.min(y_far).min(z_far);
         t_max >= 0. && t_min > 0. && t_max <= t_min
     }
 
@@ -222,10 +196,10 @@ impl BVHNode {
                 let hit = bvh.find_closest_hit(ray);
                 if closest_hit.is_none() {
                     closest_hit = hit;
-                } else if let Some((t, _)) = &hit {
-                    if *t < closest_hit.clone().unwrap().0 {
-                        closest_hit = hit;
-                    }
+                } else if let Some((t, _)) = &hit
+                    && *t < closest_hit.clone().unwrap().0
+                {
+                    closest_hit = hit;
                 }
             }
         }

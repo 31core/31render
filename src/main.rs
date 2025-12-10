@@ -20,16 +20,16 @@ use viewport::ViewportBuilder;
 
 #[derive(Parser)]
 struct Args {
-    /// Script path
+    /** Render script path */
     #[arg(short = 'S')]
     script: String,
-    /// Output path
-    #[arg(short)]
+    /** Output path */
+    #[arg(long, short)]
     output: String,
-    /// Samping
+    /** Samping times */
     #[arg(short, default_value_t = 100)]
     sampling: usize,
-    /// Max depth
+    /** Max depth */
     #[arg(short = 'd', default_value_t = 10)]
     max_depth: usize,
 }

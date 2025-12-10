@@ -1,8 +1,6 @@
-use crate::element::*;
-use crate::vertex::*;
+use crate::{element::Face, vertex::Vertex};
 use mtl::material::Material;
-use std::any::Any;
-use std::collections::HashMap;
+use std::{any::Any, collections::HashMap};
 
 fn find_next_token(tokens: &[&str]) -> usize {
     let mut t = 1;

@@ -1,6 +1,4 @@
-use crate::bvh::BVHNode;
-use crate::color::Color;
-use crate::viewport::Viewport;
+use crate::{bvh::BVHNode, color::Color, viewport::Viewport};
 
 pub struct Render {
     viewport: Viewport,

@@ -16,11 +16,11 @@ impl Vector3D {
      * Generate a random unit vector
      */
     pub fn new_random_unit() -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let rand_vec = Vector3D {
-            x: rng.gen_range(-1.0..1.),
-            y: rng.gen_range(-1.0..1.),
-            z: rng.gen_range(-1.0..1.),
+            x: rng.random_range(-1.0..1.),
+            y: rng.random_range(-1.0..1.),
+            z: rng.random_range(-1.0..1.),
         };
         rand_vec.unit()
     }

@@ -1,6 +1,4 @@
-use crate::ray::Ray;
-use crate::vector::Vector3D;
-use rand::Rng;
+use crate::{ray::Ray, vector::Vector3D};
 
 #[derive(Default, Clone, Copy)]
 pub struct Material {
@@ -35,7 +33,7 @@ impl Material {
         }
     }
     pub fn scatter(&self, ray: &Ray, length: f64, normal: &Vector3D) -> Ray {
-        let p = rand::thread_rng().gen::<f64>();
+        let p = rand::random::<f64>();
 
         /* reflect */
         if p < self.reflect_rate {

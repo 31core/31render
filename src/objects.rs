@@ -1,8 +1,4 @@
-use crate::bvh::BoarderDedection;
-use crate::material::Material;
-use crate::point::Point;
-use crate::ray::Ray;
-use crate::vector::Vector3D;
+use crate::{bvh::BoarderDedection, material::Material, point::Point, ray::Ray, vector::Vector3D};
 
 /**
  * Check if a ray hit a plane
@@ -11,11 +7,7 @@ fn plane_hit(ray: &Ray, p: &Point, normal: &Vector3D) -> Option<f64> {
     let ap = ray.origin.to_vec3d(p);
     let t_n = -ap.cdot(normal);
     let t = -t_n / ray.direction.cdot(normal);
-    if t > 0. {
-        Some(t)
-    } else {
-        None
-    }
+    if t > 0. { Some(t) } else { None }
 }
 
 pub trait Object: BoarderDedection {

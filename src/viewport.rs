@@ -1,6 +1,4 @@
-use crate::point::Point;
-use crate::ray::Ray;
-use crate::vector::Vector3D;
+use crate::{point::Point, ray::Ray, vector::Vector3D};
 
 #[derive(Default)]
 pub struct Viewport {
